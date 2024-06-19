@@ -180,6 +180,7 @@ function onEvent(Parameters) {
       break;
 
     case EventCodes.NewMob:
+      console.log("New Mob", Parameters);
       mobsHandler.NewMobEvent(Parameters);
       break;
 
@@ -231,6 +232,10 @@ function onRequest(Parameters) {
     //console.log("X: " + lpX + ", Y: " + lpY);
   }
 }
+
+setTimeout(() => {
+  console.log(mobsHandler.mobsData);
+}, 2000);
 
 function onResponse(Parameters) {
   // Player join new map

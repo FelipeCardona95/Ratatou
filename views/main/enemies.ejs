@@ -35,7 +35,7 @@
             </div>
             <div>
               <label class="flex items-center space-x-2">
-                <input type="checkbox" id="settingEnchantedEnemy" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
+                <input type="checkbox" id="settingChampionEnemy" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
                 <span class="dark:text-white ml-2">Enchanted</span>
               </label>
             </div>
@@ -199,13 +199,13 @@
   // Region Classic enemies
   const settingNormalEnemy = document.getElementById("settingNormalEnemy");
   const settingMediumEnemy = document.getElementById("settingMediumEnemy");
-  const settingEnchantedEnemy = document.getElementById("settingEnchantedEnemy");
+  const settingChampionEnemy = document.getElementById("settingChampionEnemy");
   const settingMiniBossEnemy = document.getElementById("settingMiniBossEnemy");
   const settingBossEnemy = document.getElementById("settingBossEnemy");
 
   settingNormalEnemy.checked = returnLocalBool("settingNormalEnemy");
   settingMediumEnemy.checked = returnLocalBool("settingMediumEnemy");
-  settingEnchantedEnemy.checked = returnLocalBool("settingEnchantedEnemy");
+  settingChampionEnemy.checked = returnLocalBool("settingChampionEnemy");
   settingMiniBossEnemy.checked = returnLocalBool("settingMiniBossEnemy");
   settingBossEnemy.checked = returnLocalBool("settingBossEnemy");
 
@@ -217,8 +217,8 @@
     localStorage.setItem("settingMediumEnemy", settingMediumEnemy.checked);
     HasToCheckCheckAllEnemies();
   });
-  settingEnchantedEnemy.addEventListener("click", () => {
-    localStorage.setItem("settingEnchantedEnemy", settingEnchantedEnemy.checked);
+  settingChampionEnemy.addEventListener("click", () => {
+    localStorage.setItem("settingChampionEnemy", settingChampionEnemy.checked);
     HasToCheckCheckAllEnemies();
   });
   settingMiniBossEnemy.addEventListener("click", () => {
@@ -240,7 +240,7 @@
 
     if (settingNormalEnemy.checked != settingAllEnemies.checked) settingNormalEnemy.click(true);
     if (settingMediumEnemy.checked != settingAllEnemies.checked) settingMediumEnemy.click(true);
-    if (settingEnchantedEnemy.checked != settingAllEnemies.checked) settingEnchantedEnemy.click(true);
+    if (settingChampionEnemy.checked != settingAllEnemies.checked) settingChampionEnemy.click(true);
     if (settingMiniBossEnemy.checked != settingAllEnemies.checked) settingMiniBossEnemy.click(true);
     if (settingBossEnemy.checked != settingAllEnemies.checked) settingBossEnemy.click(true);
 
@@ -253,8 +253,8 @@
     let hasToCheck = false;
 
     if (
-      (settingNormalEnemy.checked && settingMediumEnemy.checked && settingEnchantedEnemy.checked && settingMiniBossEnemy.checked && settingBossEnemy.checked && !settingAllEnemies.checked) ||
-      ((!settingNormalEnemy.checked || !settingMediumEnemy.checked || !settingEnchantedEnemy.checked || !settingMiniBossEnemy.checked || !settingBossEnemy.checked) && settingAllEnemies.checked)
+      (settingNormalEnemy.checked && settingMediumEnemy.checked && settingChampionEnemy.checked && settingMiniBossEnemy.checked && settingBossEnemy.checked && !settingAllEnemies.checked) ||
+      ((!settingNormalEnemy.checked || !settingMediumEnemy.checked || !settingChampionEnemy.checked || !settingMiniBossEnemy.checked || !settingBossEnemy.checked) && settingAllEnemies.checked)
     )
       hasToCheck = true;
 

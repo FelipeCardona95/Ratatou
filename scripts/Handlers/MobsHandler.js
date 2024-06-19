@@ -1,4 +1,7 @@
 import { EnemyType } from "./EnemyType.js";
+import { mobsData } from "/scripts/data/mobsData.js"; // Adjust the path as necessary
+import { mobTypeCategory } from "./EnemyType.js";
+
 
 class Mob {
   constructor(id, typeId, posX, posY, health, enchantmentLevel, rarity) {
@@ -50,8 +53,23 @@ export class MobsHandler {
     const logEnemiesList = document.getElementById("logEnemiesList");
     if (logEnemiesList)
       logEnemiesList.addEventListener("click", () =>
-        console.log(this.mobsList),
+        console.log(this.mobsList)
       );
+    this.mobsData = this.transformMobsData(mobsData);
+  }
+
+  transformMobsData(data) {
+    const transformedData = {};
+
+    data.forEach((mob) => {
+      transformedData[mob.id] = mob;
+    });
+
+    return transformedData;
+  }
+
+  getMobById(id) {
+    return this.mobsData[id];
   }
 
   updateMobInfo(newData) {
@@ -106,12 +124,14 @@ export class MobsHandler {
     if (name != null) {
       this.AddMist(id, posX, posY, name, enchant);
     } else {
+      //console.log("ID", typeId);
+      //console.log("MobData", this.getMobByPosition(typeId - 14));
       this.AddEnemy(id, typeId, posX, posY, exp, enchant, rarity);
     }
   }
 
   AddEnemy(id, typeId, posX, posY, health, enchant, rarity) {
-    if (this.mobsList.some((mob) => mob.id === id)) return;
+    if (this.mobsData.some((mob) => mob.id === id)) return;
 
     if (this.harvestablesNotGood.some((mob) => mob.id === id)) return;
 
@@ -123,12 +143,14 @@ export class MobsHandler {
 
     // TODO
     // List of enemies
-    if (this.mobinfo[typeId] != null) {
-      const mobsInfo = this.mobinfo[typeId];
+    if (this.mobsData[typeId] != null) {
+      const mobsInfo = this.getMobById(typeId);
 
-      h.tier = mobsInfo[0];
-      h.type = mobsInfo[1];
-      h.name = mobsInfo[2];
+      h.tier = mobsInfo.tier;
+      h.type = mobsInfo.mobtypecategory;
+      h.uniqueName = mobsInfo.uniqueName;
+      h.avatar = mobsInfo.avatar;
+      h.prefab = mobsInfo.prefab;
 
       if (h.type == EnemyType.LivingSkinnable) {
         if (!this.settings.harvestingLivingHide[`e${enchant}`][h.tier - 1]) {
@@ -138,34 +160,26 @@ export class MobsHandler {
       } else if (h.type == EnemyType.LivingHarvestable) {
         let iG = true;
 
-        switch (h.name) {
-          case "fiber":
-            if (!this.settings.harvestingLivingFiber[`e${enchant}`][h.tier - 1])
-              iG = false;
-            break;
-
-          case "hide":
-            if (!this.settings.harvestingLivingHide[`e${enchant}`][h.tier - 1])
-              iG = false;
-            break;
-
-          case "Logs":
-            if (!this.settings.harvestingLivingWood[`e${enchant}`][h.tier - 1])
-              iG = false;
-            break;
-
-          case "ore":
-            if (!this.settings.harvestingLivingOre[`e${enchant}`][h.tier - 1])
-              iG = false;
-            break;
-
-          case "rock":
-            if (!this.settings.harvestingLivingRock[`e${enchant}`][h.tier - 1])
-              iG = false;
-            break;
-
-          default:
-            break;
+        if (h.prefab.includes("_FIBER_")) {
+          if (!this.settings.harvestingLivingFiber[`e${enchant}`][h.tier - 1]) {
+            iG = false;
+          }
+        } else if (h.prefab.includes("_HIDE_")) {
+          if (!this.settings.harvestingLivingHide[`e${enchant}`][h.tier - 1]) {
+            iG = false;
+          }
+        } else if (h.prefab.includes("_WOOD_")) {
+          if (!this.settings.harvestingLivingWood[`e${enchant}`][h.tier - 1]) {
+            iG = false;
+          }
+        } else if (h.prefab.includes("_ORE_")) {
+          if (!this.settings.harvestingLivingOre[`e${enchant}`][h.tier - 1]) {
+            iG = false;
+          }
+        } else if (h.prefab.includes("_ROCK_")) {
+          if (!this.settings.harvestingLivingRock[`e${enchant}`][h.tier - 1]) {
+            iG = false;
+          }
         }
 
         if (!iG) {
@@ -176,24 +190,21 @@ export class MobsHandler {
         const offset = EnemyType.Enemy;
 
         if (!this.settings.enemyLevels[h.type - offset]) return;
-      } else if (h.type == EnemyType.Drone) {
+      } else if (h.prefab.includes("MOB_AVALON_TREASURE_MINION")) {
         if (!this.settings.avaloneDrones) return;
-      } else if (h.type == EnemyType.MistBoss) {
-        if (h.name == "CRYSTALSPIDER" && !this.settings.bossCrystalSpider)
+        if (h.uniqueName.includes("CRYSTALSPIDER") && !this.settings.bossCrystalSpider)
           return;
-        else if (
-          h.name == "FAIRYDRAGON" &&
-          !this.settings.settingBossFairyDragon
-        )
+      } else if (h.prefab.test(/MISTS.*BOSS/)) { //check if its mist boss
+         if (h.prefab.includes("FAIRYDRAGON") &&!this.settings.settingBossFairyDragon)
           return;
-        else if (h.name == "VEILWEAVER" && !this.settings.bossVeilWeaver)
+        else if (h.uniqueName.includes("MISTS_SPIDER") && !this.settings.bossVeilWeaver)
           return;
-        else if (h.name == "GRIFFIN" && !this.settings.bossGriffin) return;
-      } else if (h.type == EnemyType.Events) {
+        else if (h.uniqueName.includes("GRIFFIN") && !this.settings.bossGriffin) return;
+      } else if (h.prefab.includes("_EVENT_")) {
         if (!this.settings.showEventEnemies) return;
       } else if (!this.settings.showUnmanagedEnemies) return;
     } else if (!this.settings.showUnmanagedEnemies) return;
-
+D
     this.mobsList.push(h);
   }
 
@@ -205,7 +216,7 @@ export class MobsHandler {
     if (this.mobsList.length < pSize) return;
 
     this.harvestablesNotGood = this.harvestablesNotGood.filter(
-      (x) => x.id !== id,
+      (x) => x.id !== id
     );
   }
 
@@ -313,7 +324,7 @@ export class MobsHandler {
 
     this.mobsList.push(enemy);
     this.harvestablesNotGood = this.harvestablesNotGood.filter(
-      (x) => x.id !== enemy.id,
+      (x) => x.id !== enemy.id
     );
   }
 

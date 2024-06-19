@@ -456,7 +456,7 @@ export class Settings {
     //#region Enemies
     this.enemyLevels[0] = this.returnLocalBool("settingNormalEnemy");
     this.enemyLevels[1] = this.returnLocalBool("settingMediumEnemy");
-    this.enemyLevels[2] = this.returnLocalBool("settingEnchantedEnemy");
+    this.enemyLevels[2] = this.returnLocalBool("settingChampionEnemy");
     this.enemyLevels[3] = this.returnLocalBool("settingMiniBossEnemy");
     this.enemyLevels[4] = this.returnLocalBool("settingBossEnemy");
 
