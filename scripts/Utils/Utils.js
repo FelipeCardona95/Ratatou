@@ -51,8 +51,6 @@ const mapsDrawing = new MapDrawing(settings);
 
 const chestsHandler = new ChestsHandler();
 const mobsHandler = new MobsHandler(settings);
-mobsHandler.updateMobInfo(await GetMobList());
-
 const harvestablesHandler = new HarvestablesHandler(settings);
 const playersHandler = new PlayersHandler(settings,spellsInfo);
 
@@ -180,7 +178,6 @@ function onEvent(Parameters) {
       break;
 
     case EventCodes.NewMob:
-      console.log("New Mob", Parameters);
       mobsHandler.NewMobEvent(Parameters);
       break;
 

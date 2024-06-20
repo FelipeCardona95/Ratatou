@@ -82,7 +82,7 @@ const port = 5001;
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
-  import("open")
+  /*import("open")
     .then((open) => {
       open.default(`http://localhost:${port}`).then(() => {
         setTimeout(() => {
@@ -92,7 +92,7 @@ app.listen(port, () => {
     })
     .catch((err) => {
       console.error("Failed to open browser:", err);
-    });
+    });*/
 });
 
 var c = new Cap();

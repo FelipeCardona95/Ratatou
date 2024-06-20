@@ -1,4 +1,4 @@
-const MobTypeCategory = Object.freeze({
+export const MobTypeCategory = Object.freeze({
     SUMMON: 'summon',
     BOSS: 'boss',
     MINIBOSS: 'miniboss',
@@ -11,5 +11,3 @@ const MobTypeCategory = Object.freeze({
     TRASH: 'trash',
     CHAMPION: 'champion'
   });
-  
-  export default MobTypeCategory;

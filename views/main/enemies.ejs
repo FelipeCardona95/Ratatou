@@ -23,26 +23,20 @@
             </div>
             <div>
               <label class="flex items-center space-x-2">
-                <input type="checkbox" id="settingNormalEnemy" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
+                <input type="checkbox" id="settingStandardEnemy" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
                 <span class="dark:text-white ml-2">Normal</span>
-              </label>
-            </div>
-            <div>
-              <label class="flex items-center space-x-2">
-                <input type="checkbox" id="settingMediumEnemy" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
-                <span class="dark:text-white ml-2">Medium</span>
-              </label>
-            </div>
-            <div>
-              <label class="flex items-center space-x-2">
-                <input type="checkbox" id="settingChampionEnemy" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
-                <span class="dark:text-white ml-2">Enchanted</span>
               </label>
             </div>
             <div>
               <label class="flex items-center space-x-2">
                 <input type="checkbox" id="settingMiniBossEnemy" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
                 <span class="dark:text-white ml-2">Mini-Boss</span>
+              </label>
+            </div>
+            <div>
+              <label class="flex items-center space-x-2">
+                <input type="checkbox" id="settingChampionEnemy" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
+                <span class="dark:text-white ml-2">Enchanted</span>
               </label>
             </div>
             <div>
@@ -155,6 +149,12 @@
           </label>
         </div>
         <div>
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" id="settingChestEnemy" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
+            <span class="dark:text-white ml-2">Chest Enemies</span>
+          </label>
+        </div>
+        <div>
           <label class="flex items-center mt-4">
             <span class="dark:text-white mr-2">Min HP:</span>
             <input type="number" id="settingMinHP" class="h-10 w-20 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" min="1" max="1000000" value="1" />
@@ -197,32 +197,26 @@
   }
 
   // Region Classic enemies
-  const settingNormalEnemy = document.getElementById("settingNormalEnemy");
-  const settingMediumEnemy = document.getElementById("settingMediumEnemy");
-  const settingChampionEnemy = document.getElementById("settingChampionEnemy");
-  const settingMiniBossEnemy = document.getElementById("settingMiniBossEnemy");
-  const settingBossEnemy = document.getElementById("settingBossEnemy");
+  let settingStandardEnemy = document.getElementById("settingStandardEnemy");
+  let settingMiniBossEnemy = document.getElementById("settingMiniBossEnemy");
+  let settingChampionEnemy = document.getElementById("settingChampionEnemy");
+  let settingBossEnemy = document.getElementById("settingBossEnemy");
 
-  settingNormalEnemy.checked = returnLocalBool("settingNormalEnemy");
-  settingMediumEnemy.checked = returnLocalBool("settingMediumEnemy");
-  settingChampionEnemy.checked = returnLocalBool("settingChampionEnemy");
+  settingStandardEnemy.checked = returnLocalBool("settingStandardEnemy");
   settingMiniBossEnemy.checked = returnLocalBool("settingMiniBossEnemy");
+  settingChampionEnemy.checked = returnLocalBool("settingChampionEnemy");
   settingBossEnemy.checked = returnLocalBool("settingBossEnemy");
 
-  settingNormalEnemy.addEventListener("click", () => {
-    localStorage.setItem("settingNormalEnemy", settingNormalEnemy.checked);
-    HasToCheckCheckAllEnemies();
-  });
-  settingMediumEnemy.addEventListener("click", () => {
-    localStorage.setItem("settingMediumEnemy", settingMediumEnemy.checked);
-    HasToCheckCheckAllEnemies();
-  });
-  settingChampionEnemy.addEventListener("click", () => {
-    localStorage.setItem("settingChampionEnemy", settingChampionEnemy.checked);
+  settingStandardEnemy.addEventListener("click", () => {
+    localStorage.setItem("settingStandardEnemy", settingStandardEnemy.checked);
     HasToCheckCheckAllEnemies();
   });
   settingMiniBossEnemy.addEventListener("click", () => {
     localStorage.setItem("settingMiniBossEnemy", settingMiniBossEnemy.checked);
+    HasToCheckCheckAllEnemies();
+  });
+  settingChampionEnemy.addEventListener("click", () => {
+    localStorage.setItem("settingChampionEnemy", settingChampionEnemy.checked);
     HasToCheckCheckAllEnemies();
   });
   settingBossEnemy.addEventListener("click", () => {
@@ -231,17 +225,16 @@
   });
 
   let updatingAllEnemies = false;
-  const settingAllEnemies = document.getElementById("settingAllEnemies");
+  let settingAllEnemies = document.getElementById("settingAllEnemies");
   settingAllEnemies.checked = returnLocalBool("settingAllEnemies");
   settingAllEnemies.addEventListener("click", () => {
     updatingAllEnemies = true;
 
     localStorage.setItem("settingAllEnemies", settingAllEnemies.checked);
 
-    if (settingNormalEnemy.checked != settingAllEnemies.checked) settingNormalEnemy.click(true);
-    if (settingMediumEnemy.checked != settingAllEnemies.checked) settingMediumEnemy.click(true);
-    if (settingChampionEnemy.checked != settingAllEnemies.checked) settingChampionEnemy.click(true);
+    if (settingStandardEnemy.checked != settingAllEnemies.checked) settingStandardEnemy.click(true);
     if (settingMiniBossEnemy.checked != settingAllEnemies.checked) settingMiniBossEnemy.click(true);
+    if (settingChampionEnemy.checked != settingAllEnemies.checked) settingChampionEnemy.click(true);
     if (settingBossEnemy.checked != settingAllEnemies.checked) settingBossEnemy.click(true);
 
     updatingAllEnemies = false;
@@ -253,8 +246,8 @@
     let hasToCheck = false;
 
     if (
-      (settingNormalEnemy.checked && settingMediumEnemy.checked && settingChampionEnemy.checked && settingMiniBossEnemy.checked && settingBossEnemy.checked && !settingAllEnemies.checked) ||
-      ((!settingNormalEnemy.checked || !settingMediumEnemy.checked || !settingChampionEnemy.checked || !settingMiniBossEnemy.checked || !settingBossEnemy.checked) && settingAllEnemies.checked)
+      (settingStandardEnemy.checked && settingMiniBossEnemy.checked && settingChampionEnemy.checked && settingBossEnemy.checked &&  !settingAllEnemies.checked) ||
+      ((!settingStandardEnemy.checked || !settingMiniBossEnemy.checked || !settingChampionEnemy.checked || !settingBossEnemy.checked ) && settingAllEnemies.checked)
     )
       hasToCheck = true;
 
@@ -266,11 +259,11 @@
   // Endregion
   
   // Region Avalon Classic enemies
-  const settingAvalonNormalEnemy = document.getElementById("settingAvalonNormalEnemy");
-  const settingAvalonMediumEnemy = document.getElementById("settingAvalonMediumEnemy");
-  const settingAvalonEnchantedEnemy = document.getElementById("settingAvalonEnchantedEnemy");
-  const settingAvalonMiniBossEnemy = document.getElementById("settingAvalonMiniBossEnemy");
-  const settingAvalonBossEnemy = document.getElementById("settingAvalonBossEnemy");
+  let settingAvalonNormalEnemy = document.getElementById("settingAvalonNormalEnemy");
+  let settingAvalonMediumEnemy = document.getElementById("settingAvalonMediumEnemy");
+  let settingAvalonEnchantedEnemy = document.getElementById("settingAvalonEnchantedEnemy");
+  let settingAvalonMiniBossEnemy = document.getElementById("settingAvalonMiniBossEnemy");
+  let settingAvalonBossEnemy = document.getElementById("settingAvalonBossEnemy");
 
   settingAvalonNormalEnemy.checked = returnLocalBool("settingAvalonNormalEnemy");
   settingAvalonMediumEnemy.checked = returnLocalBool("settingAvalonMediumEnemy");
@@ -300,7 +293,7 @@
   });
 
   let updatingAvalonAllEnemies = false;
-  const settingAvalonAllEnemies = document.getElementById("settingAvalonAllEnemies");
+  let settingAvalonAllEnemies = document.getElementById("settingAvalonAllEnemies");
   settingAvalonAllEnemies.checked = returnLocalBool("settingAvalonAllEnemies");
   settingAvalonAllEnemies.addEventListener("click", () => {
     updatingAvalonAllEnemies = true;
@@ -335,25 +328,31 @@
   // Endregion
 
   // Region Other
-  const settingAvaloneDrones = document.getElementById("settingAvaloneDrones");
+  let settingAvaloneDrones = document.getElementById("settingAvaloneDrones");
   settingAvaloneDrones.checked = returnLocalBool("settingAvaloneDrones");
   settingAvaloneDrones.addEventListener("click", () => {
     localStorage.setItem("settingAvaloneDrones", settingAvaloneDrones.checked);
   });
 
-  const settingShowUnmanagedEnemies = document.getElementById("settingShowUnmanagedEnemies");
+  let settingChestEnemy = document.getElementById("settingChestEnemy");
+  settingChestEnemy.checked = returnLocalBool("settingChestEnemy");
+  settingChestEnemy.addEventListener("click", () => {
+    localStorage.setItem("settingChestEnemy", settingChestEnemy.checked);
+  });
+
+  let settingShowUnmanagedEnemies = document.getElementById("settingShowUnmanagedEnemies");
   settingShowUnmanagedEnemies.checked = returnLocalBool("settingShowUnmanagedEnemies");
   settingShowUnmanagedEnemies.addEventListener("click", () => {
     localStorage.setItem("settingShowUnmanagedEnemies", settingShowUnmanagedEnemies.checked);
   });
 
-  const settingShowEventEnemies = document.getElementById("settingShowEventEnemies");
+  let settingShowEventEnemies = document.getElementById("settingShowEventEnemies");
   settingShowEventEnemies.checked = returnLocalBool("settingShowEventEnemies");
   settingShowEventEnemies.addEventListener("click", () => {
     localStorage.setItem("settingShowEventEnemies", settingShowEventEnemies.checked);
   });
 
-  const settingMinHP = document.getElementById("settingMinHP");
+  let settingMinHP = document.getElementById("settingMinHP");
   settingMinHP.value = localStorage.getItem("settingMinHP") || 1;
   settingMinHP.addEventListener("change", () => {
     let minHPValue = parseInt(settingMinHP.value, 10);
@@ -368,10 +367,10 @@
   // endregion
 
   // region Mists
-  const settingBossCrystalSpider = document.getElementById("settingBossCrystalSpider");
-  const settingBossFairyDragon = document.getElementById("settingBossFairyDragon");
-  const settingBossVeilWeaver = document.getElementById("settingBossVeilWeaver");
-  const settingBossGriffin = document.getElementById("settingBossGriffin");
+  let settingBossCrystalSpider = document.getElementById("settingBossCrystalSpider");
+  let settingBossFairyDragon = document.getElementById("settingBossFairyDragon");
+  let settingBossVeilWeaver = document.getElementById("settingBossVeilWeaver");
+  let settingBossGriffin = document.getElementById("settingBossGriffin");
 
   settingBossCrystalSpider.checked = returnLocalBool("settingBossCrystalSpider");
   settingBossFairyDragon.checked = returnLocalBool("settingBossFairyDragon");
@@ -393,13 +392,13 @@
   // Endregion
 
   // Region Debug
-  const settingEnemiesHP = document.getElementById("settingEnemiesHP");
+  let settingEnemiesHP = document.getElementById("settingEnemiesHP");
   settingEnemiesHP.checked = returnLocalBool("settingEnemiesHP");
   settingEnemiesHP.addEventListener("click", () => {
     localStorage.setItem("settingEnemiesHP", settingEnemiesHP.checked);
   });
 
-  const settingEnemiesID = document.getElementById("settingEnemiesID");
+  let settingEnemiesID = document.getElementById("settingEnemiesID");
   settingEnemiesID.checked = returnLocalBool("settingEnemiesID");
   settingEnemiesID.addEventListener("click", () => {
     localStorage.setItem("settingEnemiesID", settingEnemiesID.checked);

@@ -1,6 +1,6 @@
 import { EnemyType } from "./EnemyType.js";
 import { mobsData } from "/scripts/data/mobsData.js"; // Adjust the path as necessary
-import { mobTypeCategory } from "./EnemyType.js";
+import { MobTypeCategory } from "./MobTypeCategory.js";
 
 
 class Mob {
@@ -13,7 +13,10 @@ class Mob {
     this.enchantmentLevel = enchantmentLevel;
     this.rarity = rarity;
     this.tier = 0;
-    this.type = EnemyType.Enemy;
+    this.type = null;
+    this.mobTypeCategory = null;
+    this.uniqueName = null;
+    this.avatar = null;
     this.name = null;
     this.exp = 0;
     this.hX = 0;
@@ -71,11 +74,7 @@ export class MobsHandler {
   getMobById(id) {
     return this.mobsData[id];
   }
-
-  updateMobInfo(newData) {
-    this.mobinfo = newData;
-  }
-
+  
   clear() {
     this.mobsList = [];
     this.mistList = [];
@@ -84,7 +83,6 @@ export class MobsHandler {
   NewMobEvent(parameters) {
     const id = parseInt(parameters[0]); // entity id
     let typeId = parseInt(parameters[1]); // real type id
-
     const loc = parameters[7];
     let posX = loc[0];
     let posY = loc[1];
@@ -124,19 +122,18 @@ export class MobsHandler {
     if (name != null) {
       this.AddMist(id, posX, posY, name, enchant);
     } else {
-      //console.log("ID", typeId);
-      //console.log("MobData", this.getMobByPosition(typeId - 14));
       this.AddEnemy(id, typeId, posX, posY, exp, enchant, rarity);
     }
   }
 
   AddEnemy(id, typeId, posX, posY, health, enchant, rarity) {
-    if (this.mobsData.some((mob) => mob.id === id)) return;
+
+    typeId -=14;
+    if (this.mobsList.some((mob) => mob.id === id)) return;
 
     if (this.harvestablesNotGood.some((mob) => mob.id === id)) return;
 
     const h = new Mob(id, typeId, posX, posY, health, enchant, rarity);
-
     // Check minimum HP
     const minHP = localStorage.getItem("settingMinHP");
     if (h.health < minHP) return;
@@ -145,19 +142,19 @@ export class MobsHandler {
     // List of enemies
     if (this.mobsData[typeId] != null) {
       const mobsInfo = this.getMobById(typeId);
-
       h.tier = mobsInfo.tier;
-      h.type = mobsInfo.mobtypecategory;
-      h.uniqueName = mobsInfo.uniqueName;
+      h.mobTypeCategory = mobsInfo.mobtypecategory;
+      h.uniqueName = mobsInfo.uniquename;
       h.avatar = mobsInfo.avatar;
       h.prefab = mobsInfo.prefab;
-
-      if (h.type == EnemyType.LivingSkinnable) {
+      h.type =  this.assignTypeBasedOnPrefab(mobsInfo.prefab);
+      h.name = this.assignNameBasedOnPrefab(mobsInfo.prefab);
+      if (h.type == "LivingSkinnable") {
         if (!this.settings.harvestingLivingHide[`e${enchant}`][h.tier - 1]) {
           this.harvestablesNotGood.push(h);
           return;
         }
-      } else if (h.type == EnemyType.LivingHarvestable) {
+      } else if (h.type == "LivingHarvestable") {
         let iG = true;
 
         if (h.prefab.includes("_FIBER_")) {
@@ -185,27 +182,85 @@ export class MobsHandler {
         if (!iG) {
           this.harvestablesNotGood.push(h);
           return;
-        }
-      } else if (h.type >= EnemyType.Enemy && h.type <= EnemyType.Boss) {
-        const offset = EnemyType.Enemy;
-
-        if (!this.settings.enemyLevels[h.type - offset]) return;
-      } else if (h.prefab.includes("MOB_AVALON_TREASURE_MINION")) {
-        if (!this.settings.avaloneDrones) return;
-        if (h.uniqueName.includes("CRYSTALSPIDER") && !this.settings.bossCrystalSpider)
-          return;
-      } else if (h.prefab.test(/MISTS.*BOSS/)) { //check if its mist boss
-         if (h.prefab.includes("FAIRYDRAGON") &&!this.settings.settingBossFairyDragon)
-          return;
-        else if (h.uniqueName.includes("MISTS_SPIDER") && !this.settings.bossVeilWeaver)
-          return;
-        else if (h.uniqueName.includes("GRIFFIN") && !this.settings.bossGriffin) return;
-      } else if (h.prefab.includes("_EVENT_")) {
-        if (!this.settings.showEventEnemies) return;
-      } else if (!this.settings.showUnmanagedEnemies) return;
-    } else if (!this.settings.showUnmanagedEnemies) return;
-D
+        }//Check if enemy is regular Enemy
+      } else if (this.shouldReturnStandardBasedOnCategory(h) || this.shouldReturnBasedOnType(h) || this.shouldReturnBasedOnPrefab(h)) {
+        return;
+      }
+    }
     this.mobsList.push(h);
+  }
+
+  assignNameBasedOnPrefab(mobPrefab) {
+    let mobName = '';
+    if (mobPrefab.includes('_HIDE_')) {
+      mobName = 'hide';
+    } else if (mobPrefab.includes('_WOOD_')) {
+      mobName = 'Logs';
+    } else if (mobPrefab.includes('_ORE_')) {
+      mobName = 'ore';
+    } else if (mobPrefab.includes('_FIBER_')) {
+      mobName = 'fiber';
+    }else if (mobPrefab.includes('_ROCK_')) {
+      mobName = 'rock';
+    }else {
+      mobName = 'unknown'; // Optional: handle cases where the prefab doesn't match any criteria
+    }
+    return mobName;
+  }
+
+  assignTypeBasedOnPrefab(mobPrefab) {
+    let mobType = '';
+    if (mobPrefab.includes('_HIDE_')) {
+      mobType = 'LivingSkinnable';
+    } else if (mobPrefab.includes('_WOOD_') || mobPrefab.includes('_ORE_') || mobPrefab.includes('_FIBER_')) {
+      mobType = 'LivingHarvestable';
+    } else {
+      mobType = 'Unknown'; // Optional: handle cases where the prefab doesn't match any criteria
+    }
+    return mobType;
+  }
+
+  shouldReturnStandardBasedOnCategory(h) {
+    const standardEnemies = this.settings.returnLocalBool("settingStandardEnemy");
+    const categoriesToCheck = [MobTypeCategory.TRASH, null, MobTypeCategory.ROAMING, MobTypeCategory.ENVIRONMENT, MobTypeCategory.STANDARD, MobTypeCategory.SUMMON];
+    return categoriesToCheck.includes(h.mobTypeCategory) && !standardEnemies
+  }
+
+  shouldReturnTreasureBasedOnCategory(h) {
+    const chestEnemies = this.settings.returnLocalBool("settingChestEnemy");
+    const categoriesToCheck = [MobTypeCategory.CHEST];
+    return categoriesToCheck.includes(h.mobTypeCategory) && !chestEnemies
+  }
+  
+  shouldReturnBasedOnType(h) {
+    const miniBossEnemies = this.settings.returnLocalBool("settingMiniBossEnemy");
+    const championEnemies = this.settings.returnLocalBool("settingChampionEnemy");
+    const bossEnemies = this.settings.returnLocalBool("settingBossEnemy");
+    if (h.mobTypeCategory === MobTypeCategory.CHAMPION && !championEnemies) return true;
+    if (h.mobTypeCategory === MobTypeCategory.MINIBOSS && !miniBossEnemies) return true;
+    if (h.mobTypeCategory === MobTypeCategory.BOSS && !bossEnemies) return true;
+    return false;
+  }
+  
+  shouldReturnBasedOnPrefab(h) {
+    const avaloneDrones = this.settings.returnLocalBool("settingAvaloneDrones");
+    const bossCrystalSpider = this.settings.returnLocalBool("settingBossCrystalSpider");
+    const bossFairyDragon = this.settings.returnLocalBool("settingBossFairyDragon");
+    const bossVeilWeaver = this.settings.returnLocalBool("settingBossVeilWeaver");
+    const bossGriffin = this.settings.returnLocalBool("settingBossGriffin");
+    if (h.prefab.includes("MOB_AVALON_TREASURE_MINION")) {
+      if (!avaloneDrones) return true;
+    } else if (/MISTS.*BOSS/.test(h.prefab)) {
+      if (h.prefab.includes("FAIRYDRAGON") && !bossFairyDragon) return true;
+      if (h.uniqueName.includes("MISTS_SPIDER") && !bossVeilWeaver) return true;
+      if (h.uniqueName.includes("GRIFFIN") && !bossGriffin) return true;
+    } else if (h.prefab.includes("_EVENT_")) {
+      if (!this.settings.showEventEnemies) return true;
+    } else if(h.uniqueName.includes("CRYSTALSPIDER") && !bossCrystalSpider){ return true;
+    } else if (!this.settings.showUnmanagedEnemies) {
+      return true;
+    }
+    return false;
   }
 
   removeMob(id) {
@@ -249,7 +304,7 @@ D
 
     let hasToSwapFromList = false;
 
-    if (enemy.type == EnemyType.LivingSkinnable) {
+    if (enemy.type == "LivingSkinnable") {
       if (
         !this.settings.harvestingLivingHide[`e${enemy.enchantmentLevel}`][
           enemy.tier - 1
@@ -258,7 +313,7 @@ D
         return;
 
       hasToSwapFromList = true;
-    } else if (enemy.type == EnemyType.LivingHarvestable) {
+    } else if (enemy.type == "LivingHarvestable") {
       switch (enemy.name) {
         case "fiber":
           if (

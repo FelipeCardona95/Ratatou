@@ -45,18 +45,16 @@ export class MobsDrawing extends DrawingUtils {
       let drawId = this.settings.enemiesID;
 
       if (
-        mobOne.type == EnemyType.LivingSkinnable ||
-        mobOne.type == EnemyType.LivingHarvestable
+        mobOne.type == "LivingSkinnable" ||
+        mobOne.type == "LivingHarvestable"
       ) {
         imageName =
           mobOne.name + "_" + mobOne.tier + "_" + mobOne.enchantmentLevel;
         drawHp = this.settings.livingResourcesHp;
         drawId = this.settings.livingResourcesID;
-      } else if (
-        mobOne.type >= EnemyType.Enemy &&
-        mobOne.type <= EnemyType.Events
-      ) {
-        imageName = mobOne.name;
+      } else {
+        imageName = mobOne.avatar;
+        imageFolder = "Mobs";
       }
 
       if (imageName !== undefined)

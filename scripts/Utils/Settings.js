@@ -153,9 +153,13 @@ export class Settings {
     //#endregion
 
     //#region Enemies
-    this.enemyLevels = [false, false, false, false, false];
-
+    this.standardEnemies = false;
+    this.championEnemies = false;
+    this.miniBossEnemies = false;
+    this.bossEnemies = false;
+    
     this.avaloneDrones = false;
+    this.chestEnemies = false;
     this.showUnmanagedEnemies = false;
     this.showEventEnemies = false;
 
@@ -454,13 +458,13 @@ export class Settings {
     //#endregion
 
     //#region Enemies
-    this.enemyLevels[0] = this.returnLocalBool("settingNormalEnemy");
-    this.enemyLevels[1] = this.returnLocalBool("settingMediumEnemy");
-    this.enemyLevels[2] = this.returnLocalBool("settingChampionEnemy");
-    this.enemyLevels[3] = this.returnLocalBool("settingMiniBossEnemy");
-    this.enemyLevels[4] = this.returnLocalBool("settingBossEnemy");
+    this.standardEnemies = this.returnLocalBool("settingStandardEnemy");
+    this.miniBossEnemies = this.returnLocalBool("settingMiniBossEnemy");
+    this.championEnemies = this.returnLocalBool("settingChampionEnemy");
+    this.bossEnemies = this.returnLocalBool("settingBossEnemy");
 
     this.avaloneDrones = this.returnLocalBool("settingAvaloneDrones");
+    this.chestEnemies = this.returnLocalBool("settingChestEnemy");
     this.showUnmanagedEnemies = this.returnLocalBool(
       "settingShowUnmanagedEnemies",
     );
