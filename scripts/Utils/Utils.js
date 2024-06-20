@@ -231,7 +231,7 @@ function onRequest(Parameters) {
 }
 
 setTimeout(() => {
-  console.log(mobsHandler.mobsData);
+  //console.log(mobsHandler.mobsData);
 }, 2000);
 
 function onResponse(Parameters) {

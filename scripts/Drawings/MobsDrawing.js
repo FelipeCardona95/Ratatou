@@ -1,4 +1,4 @@
-import { EnemyType } from "../Handlers/EnemyType.js";
+import { MobTypeCategory } from "../Handlers/MobTypeCategory.js";
 
 export class MobsDrawing extends DrawingUtils {
   constructor(Settings) {
@@ -33,8 +33,61 @@ export class MobsDrawing extends DrawingUtils {
     }
   }
 
+  shouldReturnStandardBasedOnCategory(h) {
+    const standardEnemies = this.settings.returnLocalBool("settingStandardEnemy");
+    const categoriesToCheck = [MobTypeCategory.TRASH, null, MobTypeCategory.ROAMING, MobTypeCategory.ENVIRONMENT, MobTypeCategory.STANDARD, MobTypeCategory.SUMMON];
+    return categoriesToCheck.includes(h.mobTypeCategory) && !standardEnemies && h.type == 'Unknown'
+  }
+
+  shouldReturnTreasureBasedOnCategory(h) {
+    const chestEnemies = this.settings.returnLocalBool("settingChestEnemy");
+    const categoriesToCheck = [MobTypeCategory.CHEST];
+    return categoriesToCheck.includes(h.mobTypeCategory) && !chestEnemies
+  }
+  
+  shouldReturnBasedOnType(h) {
+    const miniBossEnemies = this.settings.returnLocalBool("settingMiniBossEnemy");
+    const championEnemies = this.settings.returnLocalBool("settingChampionEnemy");
+    const bossEnemies = this.settings.returnLocalBool("settingBossEnemy");
+    if (h.mobTypeCategory === MobTypeCategory.CHAMPION && !championEnemies) return true;
+    if (h.mobTypeCategory === MobTypeCategory.MINIBOSS && !miniBossEnemies) return true;
+    if (h.mobTypeCategory === MobTypeCategory.BOSS && !bossEnemies) return true;
+    return false;
+  }
+  
+  shouldReturnBasedOnPrefab(h) {
+    const avaloneDrones = this.settings.returnLocalBool("settingAvaloneDrones");
+    const bossCrystalSpider = this.settings.returnLocalBool("settingBossCrystalSpider");
+    const bossFairyDragon = this.settings.returnLocalBool("settingBossFairyDragon");
+    const bossVeilWeaver = this.settings.returnLocalBool("settingBossVeilWeaver");
+    const bossGriffin = this.settings.returnLocalBool("settingBossGriffin");
+    if (h.prefab.includes("MOB_AVALON_TREASURE_MINION")) {
+      if (!avaloneDrones) return true;
+    } else if (/MISTS.*BOSS/.test(h.prefab)) {
+      if (h.prefab.includes("FAIRYDRAGON") && !bossFairyDragon) return true;
+      if (h.uniqueName.includes("MISTS_SPIDER") && !bossVeilWeaver) return true;
+      if (h.uniqueName.includes("GRIFFIN") && !bossGriffin) return true;
+    } else if (h.prefab.includes("_EVENT_")) {
+      if (!this.settings.showEventEnemies) return true;
+    } else if(h.uniqueName.includes("CRYSTALSPIDER") && !bossCrystalSpider){ return true;
+    } else if (!this.settings.showUnmanagedEnemies) {
+      return true;
+    }
+    return false;
+  }
+
   invalidate(ctx, mobs, mists) {
+
+    const minHP = localStorage.getItem("settingMinHP");
+    const minFame = localStorage.getItem("settingMinFame");
+
     for (const mobOne of mobs) {
+      
+    if (mobOne.health < minHP && mobOne.type == 'Unknown' && mobOne.mobTypeCategory != MobTypeCategory.CHEST) continue;
+    if (mobOne.fame < minFame && mobOne.type == 'Unknown' && mobOne.mobTypeCategory != MobTypeCategory.CHEST) continue;
+    if (this.shouldReturnStandardBasedOnCategory(mobOne) || this.shouldReturnBasedOnType(mobOne) || this.shouldReturnBasedOnPrefab(mobOne) || this.shouldReturnTreasureBasedOnCategory(mobOne)) {
+        continue;
+      }
       const point = this.transformPoint(mobOne.hX, mobOne.hY);
 
       let imageName = undefined;

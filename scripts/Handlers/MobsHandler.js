@@ -1,6 +1,4 @@
-import { EnemyType } from "./EnemyType.js";
 import { mobsData } from "/scripts/data/mobsData.js"; // Adjust the path as necessary
-import { MobTypeCategory } from "./MobTypeCategory.js";
 
 
 class Mob {
@@ -21,6 +19,7 @@ class Mob {
     this.exp = 0;
     this.hX = 0;
     this.hY = 0;
+    this.fame = 0;
   }
 }
 
@@ -134,9 +133,6 @@ export class MobsHandler {
     if (this.harvestablesNotGood.some((mob) => mob.id === id)) return;
 
     const h = new Mob(id, typeId, posX, posY, health, enchant, rarity);
-    // Check minimum HP
-    const minHP = localStorage.getItem("settingMinHP");
-    if (h.health < minHP) return;
 
     // TODO
     // List of enemies
@@ -149,6 +145,7 @@ export class MobsHandler {
       h.prefab = mobsInfo.prefab;
       h.type =  this.assignTypeBasedOnPrefab(mobsInfo.prefab);
       h.name = this.assignNameBasedOnPrefab(mobsInfo.prefab);
+      h.fame = mobsInfo.fame;
       if (h.type == "LivingSkinnable") {
         if (!this.settings.harvestingLivingHide[`e${enchant}`][h.tier - 1]) {
           this.harvestablesNotGood.push(h);
@@ -183,8 +180,6 @@ export class MobsHandler {
           this.harvestablesNotGood.push(h);
           return;
         }//Check if enemy is regular Enemy
-      } else if (this.shouldReturnStandardBasedOnCategory(h) || this.shouldReturnBasedOnType(h) || this.shouldReturnBasedOnPrefab(h)) {
-        return;
       }
     }
     this.mobsList.push(h);
@@ -218,49 +213,6 @@ export class MobsHandler {
       mobType = 'Unknown'; // Optional: handle cases where the prefab doesn't match any criteria
     }
     return mobType;
-  }
-
-  shouldReturnStandardBasedOnCategory(h) {
-    const standardEnemies = this.settings.returnLocalBool("settingStandardEnemy");
-    const categoriesToCheck = [MobTypeCategory.TRASH, null, MobTypeCategory.ROAMING, MobTypeCategory.ENVIRONMENT, MobTypeCategory.STANDARD, MobTypeCategory.SUMMON];
-    return categoriesToCheck.includes(h.mobTypeCategory) && !standardEnemies
-  }
-
-  shouldReturnTreasureBasedOnCategory(h) {
-    const chestEnemies = this.settings.returnLocalBool("settingChestEnemy");
-    const categoriesToCheck = [MobTypeCategory.CHEST];
-    return categoriesToCheck.includes(h.mobTypeCategory) && !chestEnemies
-  }
-  
-  shouldReturnBasedOnType(h) {
-    const miniBossEnemies = this.settings.returnLocalBool("settingMiniBossEnemy");
-    const championEnemies = this.settings.returnLocalBool("settingChampionEnemy");
-    const bossEnemies = this.settings.returnLocalBool("settingBossEnemy");
-    if (h.mobTypeCategory === MobTypeCategory.CHAMPION && !championEnemies) return true;
-    if (h.mobTypeCategory === MobTypeCategory.MINIBOSS && !miniBossEnemies) return true;
-    if (h.mobTypeCategory === MobTypeCategory.BOSS && !bossEnemies) return true;
-    return false;
-  }
-  
-  shouldReturnBasedOnPrefab(h) {
-    const avaloneDrones = this.settings.returnLocalBool("settingAvaloneDrones");
-    const bossCrystalSpider = this.settings.returnLocalBool("settingBossCrystalSpider");
-    const bossFairyDragon = this.settings.returnLocalBool("settingBossFairyDragon");
-    const bossVeilWeaver = this.settings.returnLocalBool("settingBossVeilWeaver");
-    const bossGriffin = this.settings.returnLocalBool("settingBossGriffin");
-    if (h.prefab.includes("MOB_AVALON_TREASURE_MINION")) {
-      if (!avaloneDrones) return true;
-    } else if (/MISTS.*BOSS/.test(h.prefab)) {
-      if (h.prefab.includes("FAIRYDRAGON") && !bossFairyDragon) return true;
-      if (h.uniqueName.includes("MISTS_SPIDER") && !bossVeilWeaver) return true;
-      if (h.uniqueName.includes("GRIFFIN") && !bossGriffin) return true;
-    } else if (h.prefab.includes("_EVENT_")) {
-      if (!this.settings.showEventEnemies) return true;
-    } else if(h.uniqueName.includes("CRYSTALSPIDER") && !bossCrystalSpider){ return true;
-    } else if (!this.settings.showUnmanagedEnemies) {
-      return true;
-    }
-    return false;
   }
 
   removeMob(id) {
