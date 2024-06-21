@@ -212,7 +212,27 @@ export class Settings {
           }
 
           break;
-
+          case "Mobs":
+            if (this.images[path]) {
+              resolve();
+            } else {
+              const img = new Image();
+  
+              img.onload = () => {
+                this.images[path] = img;
+                resolve();
+              };
+  
+              img.onerror = () => {
+                this.images[path] = null;
+                reject();
+              };
+  
+              img.src = path;
+            }
+  
+            break;
+  
         case "Maps":
           if (this.map_images[path]) {
             resolve();
@@ -313,6 +333,8 @@ export class Settings {
       case "Resources":
         return this.images[path];
 
+      case "Mobs":
+        return this.images[path];
       case "Maps":
         return this.map_images[path];
 
@@ -333,6 +355,10 @@ export class Settings {
   ClearPreloadedImages(container) {
     switch (container) {
       case "Resources":
+        this.images = {};
+        break;
+
+      case "Mobs":
         this.images = {};
         break;
 
