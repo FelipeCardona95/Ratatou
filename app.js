@@ -66,7 +66,6 @@ app.get("/drawing", (req, res) => {
 });
 
 app.use("/scripts", express.static(__dirname + "/scripts"));
-app.use("/mob-info", express.static(__dirname + "/mob-info"));
 app.use("/scripts/Handlers", express.static(__dirname + "/scripts/Handlers"));
 app.use("/scripts/Drawings", express.static(__dirname + "/scripts/Drawings"));
 app.use("/scripts/Utils", express.static(__dirname + "/scripts/Utils"));

@@ -18,7 +18,6 @@ import { TrackFootprintsHandler } from "../Handlers/TrackFootprintsHandler.js";
 import { SpellsInfo } from '../Handlers/SpellsInfo.js';
 import { Settings } from './Settings.js';
 
-import { GetMobList } from "../../mob-info/MobsInfo.js";
 
 var canvasMap = document.getElementById("mapCanvas");
 var contextMap = canvasMap.getContext("2d");

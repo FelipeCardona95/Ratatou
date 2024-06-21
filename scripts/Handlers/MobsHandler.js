@@ -335,9 +335,6 @@ export class MobsHandler {
     );
   }
 
-  getMobList() {
-    return [...this.mobsList];
-  }
 
   AddMist(id, posX, posY, name, enchant) {
     if (this.mistList.some((mist) => mist.id === id)) return;
