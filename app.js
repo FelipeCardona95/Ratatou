@@ -70,6 +70,7 @@ app.use("/scripts/Handlers", express.static(__dirname + "/scripts/Handlers"));
 app.use("/scripts/Drawings", express.static(__dirname + "/scripts/Drawings"));
 app.use("/scripts/Utils", express.static(__dirname + "/scripts/Utils"));
 app.use("/images/Resources", express.static(__dirname + "/images/Resources"));
+app.use("/images/Mobs", express.static(__dirname + "/images/Mobs"));
 app.use("/images/Maps", express.static(__dirname + "/images/Maps"));
 app.use("/images/Items", express.static(__dirname + "/images/Items"));
 app.use('/images/Spells', express.static(__dirname + '/images/Spells'));

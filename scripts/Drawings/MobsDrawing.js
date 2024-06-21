@@ -92,7 +92,7 @@ export class MobsDrawing extends DrawingUtils {
 
       let imageName = undefined;
       let imageFolder = "Resources"; // Default to Resources folder
-
+      let sizeImg = 40;
       /* Set by default to enemy, since there are more, so we don't add at each case */
       let drawHp = this.settings.enemiesHP;
       let drawId = this.settings.enemiesID;
@@ -108,10 +108,12 @@ export class MobsDrawing extends DrawingUtils {
       } else {
         imageName = mobOne.avatar;
         imageFolder = "Mobs";
+        sizeImg = 60; 
+
       }
 
       if (imageName !== undefined)
-        this.DrawCustomImage(ctx, point.x, point.y, imageName, imageFolder, 40);
+        this.DrawCustomImage(ctx, point.x, point.y, imageName, imageFolder, sizeImg);
       else this.drawFilledCircle(ctx, point.x, point.y, 10, "#4169E1"); // Unmanaged ids
 
       if (drawHp) {
