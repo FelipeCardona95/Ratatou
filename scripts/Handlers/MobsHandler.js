@@ -207,7 +207,7 @@ export class MobsHandler {
     let mobType = '';
     if (mobPrefab.includes('_HIDE_')) {
       mobType = 'LivingSkinnable';
-    } else if (mobPrefab.includes('_WOOD_') || mobPrefab.includes('_ORE_') || mobPrefab.includes('_FIBER_')) {
+    } else if (mobPrefab.includes('_WOOD_') || mobPrefab.includes('_ORE_') || mobPrefab.includes('_FIBER_') || mobPrefab.includes('_ROCK_')) {
       mobType = 'LivingHarvestable';
     } else {
       mobType = 'Unknown'; // Optional: handle cases where the prefab doesn't match any criteria
