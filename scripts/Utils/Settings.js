@@ -489,6 +489,8 @@ export class Settings {
     this.championEnemies = this.returnLocalBool("settingChampionEnemy");
     this.bossEnemies = this.returnLocalBool("settingBossEnemy");
 
+    this.showMobIcons = this.returnLocalBool("settingShowMobIcons");
+
     this.avaloneDrones = this.returnLocalBool("settingAvaloneDrones");
     this.chestEnemies = this.returnLocalBool("settingChestEnemy");
     this.showUnmanagedEnemies = this.returnLocalBool(

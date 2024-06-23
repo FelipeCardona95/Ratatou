@@ -46,52 +46,15 @@
               </label>
             </div>
           </div>
-        </div>
-      </td>
-
-      <td>
-        <!-- Avalon Enemies -->
-        <div class="p-6 bg-white rounded-lg shadow-xs dark:bg-gray-800">
+        </br>
           <div class="mb-4">
-            <h4 class="text-2xl font-semibold text-gray-600 dark:text-gray-300">Avalon Enemies</h4>
+            <h4 class="text-2xl font-semibold text-gray-600 dark:text-gray-300">Enemie Settings</h4>
           </div>
-          <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-            <div>
-              <label class="flex items-center space-x-2">
-                <input type="checkbox" id="settingAvalonAllEnemies" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
-                <span class="dark:text-white ml-2">All</span>
-              </label>
-            </div>
-            <div>
-              <label class="flex items-center space-x-2">
-                <input type="checkbox" id="settingAvalonNormalEnemy" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
-                <span class="dark:text-white ml-2">Drone</span>
-              </label>
-            </div>
-            <div>
-              <label class="flex items-center space-x-2">
-                <input type="checkbox" id="settingAvalonMediumEnemy" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
-                <span class="dark:text-white ml-2">Pathfinder</span>
-              </label>
-            </div>
-            <div>
-              <label class="flex items-center space-x-2">
-                <input type="checkbox" id="settingAvalonEnchantedEnemy" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
-                <span class="dark:text-white ml-2">Avalonian</span>
-              </label>
-            </div>
-            <div>
-              <label class="flex items-center space-x-2">
-                <input type="checkbox" id="settingAvalonMiniBossEnemy" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
-                <span class="dark:text-white ml-2">Mini-Boss</span>
-              </label>
-            </div>
-            <div>
-              <label class="flex items-center space-x-2">
-                <input type="checkbox" id="settingAvalonBossEnemy" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
-                <span class="dark:text-white ml-2">Boss</span>
-              </label>
-            </div>
+          <div>
+            <label class="flex items-center space-x-2">
+              <input type="checkbox" id="settingShowMobIcons" class="h-5 w-5 text-indigo-600 border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" />
+              <span class="dark:text-white ml-2">Show Enemy Avatars</span>
+            </label>
           </div>
         </div>
       </td>
@@ -208,11 +171,13 @@
   let settingMiniBossEnemy = document.getElementById("settingMiniBossEnemy");
   let settingChampionEnemy = document.getElementById("settingChampionEnemy");
   let settingBossEnemy = document.getElementById("settingBossEnemy");
+  let settingShowMobIcons = document.getElementById("settingShowMobIcons");
 
   settingStandardEnemy.checked = returnLocalBool("settingStandardEnemy");
   settingMiniBossEnemy.checked = returnLocalBool("settingMiniBossEnemy");
   settingChampionEnemy.checked = returnLocalBool("settingChampionEnemy");
   settingBossEnemy.checked = returnLocalBool("settingBossEnemy");
+  settingShowMobIcons.checked = returnLocalBool("settingShowMobIcons");
 
   settingStandardEnemy.addEventListener("click", () => {
     localStorage.setItem("settingStandardEnemy", settingStandardEnemy.checked);
@@ -228,6 +193,10 @@
   });
   settingBossEnemy.addEventListener("click", () => {
     localStorage.setItem("settingBossEnemy", settingBossEnemy.checked);
+    HasToCheckCheckAllEnemies();
+  });
+  settingShowMobIcons.addEventListener("click", () => {
+    localStorage.setItem("settingShowMobIcons", settingShowMobIcons.checked);
     HasToCheckCheckAllEnemies();
   });
 

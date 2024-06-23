@@ -34,32 +34,57 @@ export class MobsDrawing extends DrawingUtils {
   }
 
   shouldReturnStandardBasedOnCategory(h) {
-    const standardEnemies = this.settings.returnLocalBool("settingStandardEnemy");
-    const categoriesToCheck = [MobTypeCategory.TRASH, null, MobTypeCategory.ROAMING, MobTypeCategory.ENVIRONMENT, MobTypeCategory.STANDARD, MobTypeCategory.SUMMON];
-    return categoriesToCheck.includes(h.mobTypeCategory) && !standardEnemies && h.type == 'Unknown'
+    const standardEnemies = this.settings.returnLocalBool(
+      "settingStandardEnemy"
+    );
+    const categoriesToCheck = [
+      MobTypeCategory.TRASH,
+      null,
+      MobTypeCategory.ROAMING,
+      MobTypeCategory.ENVIRONMENT,
+      MobTypeCategory.STANDARD,
+      MobTypeCategory.SUMMON,
+    ];
+    return (
+      categoriesToCheck.includes(h.mobTypeCategory) &&
+      !standardEnemies &&
+      h.type == "Unknown"
+    );
   }
 
   shouldReturnTreasureBasedOnCategory(h) {
     const chestEnemies = this.settings.returnLocalBool("settingChestEnemy");
     const categoriesToCheck = [MobTypeCategory.CHEST];
-    return categoriesToCheck.includes(h.mobTypeCategory) && !chestEnemies
+    return categoriesToCheck.includes(h.mobTypeCategory) && !chestEnemies;
   }
-  
+
   shouldReturnBasedOnType(h) {
-    const miniBossEnemies = this.settings.returnLocalBool("settingMiniBossEnemy");
-    const championEnemies = this.settings.returnLocalBool("settingChampionEnemy");
+    const miniBossEnemies = this.settings.returnLocalBool(
+      "settingMiniBossEnemy"
+    );
+    const championEnemies = this.settings.returnLocalBool(
+      "settingChampionEnemy"
+    );
     const bossEnemies = this.settings.returnLocalBool("settingBossEnemy");
-    if (h.mobTypeCategory === MobTypeCategory.CHAMPION && !championEnemies) return true;
-    if (h.mobTypeCategory === MobTypeCategory.MINIBOSS && !miniBossEnemies) return true;
+    if (h.mobTypeCategory === MobTypeCategory.CHAMPION && !championEnemies)
+      return true;
+    if (h.mobTypeCategory === MobTypeCategory.MINIBOSS && !miniBossEnemies)
+      return true;
     if (h.mobTypeCategory === MobTypeCategory.BOSS && !bossEnemies) return true;
     return false;
   }
-  
+
   shouldReturnBasedOnPrefab(h) {
     const avaloneDrones = this.settings.returnLocalBool("settingAvaloneDrones");
-    const bossCrystalSpider = this.settings.returnLocalBool("settingBossCrystalSpider");
-    const bossFairyDragon = this.settings.returnLocalBool("settingBossFairyDragon");
-    const bossVeilWeaver = this.settings.returnLocalBool("settingBossVeilWeaver");
+    const bossCrystalSpider = this.settings.returnLocalBool(
+      "settingBossCrystalSpider"
+    );
+    const bossFairyDragon = this.settings.returnLocalBool(
+      "settingBossFairyDragon"
+    );
+    const bossVeilWeaver = this.settings.returnLocalBool(
+      "settingBossVeilWeaver"
+    );
     const bossGriffin = this.settings.returnLocalBool("settingBossGriffin");
     if (h.prefab.includes("MOB_AVALON_TREASURE_MINION")) {
       if (!avaloneDrones) return true;
@@ -69,7 +94,8 @@ export class MobsDrawing extends DrawingUtils {
       if (h.uniqueName.includes("GRIFFIN") && !bossGriffin) return true;
     } else if (h.prefab.includes("_EVENT_")) {
       if (!this.settings.showEventEnemies) return true;
-    } else if(h.uniqueName.includes("CRYSTALSPIDER") && !bossCrystalSpider){ return true;
+    } else if (h.uniqueName.includes("CRYSTALSPIDER") && !bossCrystalSpider) {
+      return true;
     } else if (!this.settings.showUnmanagedEnemies) {
       return true;
     }
@@ -77,15 +103,29 @@ export class MobsDrawing extends DrawingUtils {
   }
 
   invalidate(ctx, mobs, mists) {
-
     const minHP = localStorage.getItem("settingMinHP");
     const minFame = localStorage.getItem("settingMinFame");
+    const showMobIcons = this.settings.returnLocalBool("settingShowMobIcons");
 
     for (const mobOne of mobs) {
-      
-    if (mobOne.health < minHP && mobOne.type == 'Unknown' && mobOne.mobTypeCategory != MobTypeCategory.CHEST) continue;
-    if (mobOne.fame < minFame && mobOne.type == 'Unknown' && mobOne.mobTypeCategory != MobTypeCategory.CHEST) continue;
-    if (this.shouldReturnStandardBasedOnCategory(mobOne) || this.shouldReturnBasedOnType(mobOne) || this.shouldReturnBasedOnPrefab(mobOne) || this.shouldReturnTreasureBasedOnCategory(mobOne)) {
+      if (
+        mobOne.health < minHP &&
+        mobOne.type == "Unknown" &&
+        mobOne.mobTypeCategory != MobTypeCategory.CHEST
+      )
+        continue;
+      if (
+        mobOne.fame < minFame &&
+        mobOne.type == "Unknown" &&
+        mobOne.mobTypeCategory != MobTypeCategory.CHEST
+      )
+        continue;
+      if (
+        this.shouldReturnStandardBasedOnCategory(mobOne) ||
+        this.shouldReturnBasedOnType(mobOne) ||
+        this.shouldReturnBasedOnPrefab(mobOne) ||
+        this.shouldReturnTreasureBasedOnCategory(mobOne)
+      ) {
         continue;
       }
       const point = this.transformPoint(mobOne.hX, mobOne.hY);
@@ -105,15 +145,41 @@ export class MobsDrawing extends DrawingUtils {
           mobOne.name + "_" + mobOne.tier + "_" + mobOne.enchantmentLevel;
         drawHp = this.settings.livingResourcesHp;
         drawId = this.settings.livingResourcesID;
+      } else if (
+        (this.shouldReturnBasedOnType(mobOne) ||
+        this.shouldReturnStandardBasedOnCategory(mobOne)) && !showMobIcons
+      ) {
+        if (this.shouldReturnStandardBasedOnCategory(mobOne) )
+          imageName = MobTypeCategory.STANDARD;
+        switch (mobOne.mobTypeCategory) {
+          case MobTypeCategory.CHAMPION:
+            imageName = MobTypeCategory.CHAMPION;
+            break;
+          case MobTypeCategory.MINIBOSS:
+            imageName = MobTypeCategory.MINIBOSS;
+            break;
+          case MobTypeCategory.BOSS:
+            imageName = MobTypeCategory.BOSS;
+            break;
+          default:
+            imageName = mobOne.avatar;
+            break;
+        }
       } else {
         imageName = mobOne.avatar;
         imageFolder = "Mobs";
-        sizeImg = 60; 
-
+        sizeImg = 60;
       }
 
       if (imageName !== undefined)
-        this.DrawCustomImage(ctx, point.x, point.y, imageName, imageFolder, sizeImg);
+        this.DrawCustomImage(
+          ctx,
+          point.x,
+          point.y,
+          imageName,
+          imageFolder,
+          sizeImg
+        );
       else this.drawFilledCircle(ctx, point.x, point.y, 10, "#4169E1"); // Unmanaged ids
 
       if (drawHp) {
