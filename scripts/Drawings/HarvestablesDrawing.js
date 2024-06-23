@@ -37,15 +37,15 @@ export class HarvestablesDrawing extends DrawingUtils {
 
       let draw = undefined;
 
-      if (type >= 11 && type <= 14) {
-        draw = "fiber_" + harvestableOne.tier + "_" + harvestableOne.charges;
-      } else if (type >= 0 && type <= 5) {
+     if ((type >= 11 && type <= 14) || (type >= 38 && type <= 42)) {
+      draw = "fiber_" + harvestableOne.tier + "_" + harvestableOne.charges;
+      } else     if ((type >= 0 && type <= 5) || (type >= 28 && type <= 32)) {
         draw = "Logs_" + harvestableOne.tier + "_" + harvestableOne.charges;
-      } else if (type >= 6 && type <= 10) {
+      } else if ((type >= 6 && type <= 10) || (type >= 33 && type <= 37)) {
         draw = "rock_" + harvestableOne.tier + "_" + harvestableOne.charges;
-      } else if (type >= 15 && type <= 22) {
+      } else if ((type >= 15 && type <= 22) || (type >= 43 && type <= 47)) {
         draw = "hide_" + harvestableOne.tier + "_" + harvestableOne.charges;
-      } else if (type >= 23 && type <= 27) {
+      } else if ((type >= 23 && type <= 27) || (type >= 48 && type <= 52)) {
         draw = "ore_" + harvestableOne.tier + "_" + harvestableOne.charges;
       }
 

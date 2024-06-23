@@ -150,7 +150,9 @@ function onEvent(Parameters) {
     case EventCodes.NewSimpleHarvestableObjectList:
       harvestablesHandler.newSimpleHarvestableObject(Parameters);
       break;
-
+      case EventCodes.NewSimpleHarvestableObject:
+        break;
+  
     case EventCodes.NewHarvestableObject:
       harvestablesHandler.newHarvestableObject(id, Parameters);
       break;

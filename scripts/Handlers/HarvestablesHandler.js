@@ -49,7 +49,8 @@ class HarvestablesHandler {
         break;
 
       case HarvestableType.Ore:
-        if (!this.settings.harvestingStaticOre[`e${charges}`][tier - 1]) return;
+        if (!this.settings.harvestingStaticOre[`e${charges}`][tier - 1]) 
+          return;
         break;
 
       case HarvestableType.Rock:
@@ -66,6 +67,9 @@ class HarvestablesHandler {
     if (!harvestable) {
       const h = new Harvestable(id, type, tier, posX, posY, charges, size);
       this.harvestableList.push(h);
+      if (type == 49) {
+        console.log("Havest List", this.harvestableList);
+      }
       //console.log("New Harvestable: " + h.toString());
     } // update
     else {
@@ -91,7 +95,8 @@ class HarvestablesHandler {
         break;
 
       case HarvestableType.Ore:
-        if (!this.settings.harvestingStaticOre[`e${charges}`][tier - 1]) return;
+        if (!this.settings.harvestingStaticOre[`e${charges}`][tier - 1])
+          return;
         break;
 
       case HarvestableType.Rock:
@@ -104,7 +109,6 @@ class HarvestablesHandler {
     }
 
     var harvestable = this.harvestableList.find((item) => item.id === id);
-
     if (!harvestable) {
       this.addHarvestable(id, type, tier, posX, posY, charges, size);
       return;
@@ -173,27 +177,30 @@ class HarvestablesHandler {
 
   // Normally work with everything
   // Good
-  newSimpleHarvestableObject(
-    Parameters, // New
-  ) {
-    const a0 = Parameters[0];
-
+  newSimpleHarvestableObject(Parameters) {
+    // Validate Parameters
+    const a0 = Parameters[0]?.data ?? [];
+    const a1 = Parameters[1]?.data ?? [];
+    const a2 = Parameters[2]?.data ?? [];
+    const a3 = Parameters[3] ?? [];
+    const a4 = Parameters[4]?.data ?? [];
+  
     if (a0.length === 0) return;
-
-    const a1 = Parameters[1]["data"];
-    const a2 = Parameters[2]["data"];
-
-    const a3 = Parameters[3];
-    const a4 = Parameters[4]["data"];
-
-    for (let i = 0; i < a0.length; i++) {
+  
+    // Ensure all arrays have the same length
+    const length = a0.length;
+    if (a1.length !== length || a2.length !== length || a3.length !== length * 2 || a4.length !== length) {
+      throw new Error("Parameter arrays have inconsistent lengths");
+    }
+  
+    for (let i = 0; i < length; i++) {
       const id = a0[i];
       const type = a1[i];
       const tier = a2[i];
       const posX = a3[i * 2];
       const posY = a3[i * 2 + 1];
       const count = a4[i];
-
+  
       this.addHarvestable(id, type, tier, posX, posY, 0, count);
     }
   }
@@ -233,15 +240,15 @@ class HarvestablesHandler {
   }
 
   GetStringType(typeNumber) {
-    if (typeNumber >= 0 && typeNumber <= 5) {
+    if ((typeNumber >= 0 && typeNumber <= 5) || (typeNumber >= 28 && typeNumber <= 32)) {
       return HarvestableType.Log;
-    } else if (typeNumber >= 6 && typeNumber <= 10) {
+    } else if ((typeNumber >= 6 && typeNumber <= 10) || (typeNumber >= 33 && typeNumber <= 37)) {
       return HarvestableType.Rock;
-    } else if (typeNumber >= 11 && typeNumber <= 14) {
+    } else if ((typeNumber >= 11 && typeNumber <= 14) || (typeNumber >= 38 && typeNumber <= 42)) {
       return HarvestableType.Fiber;
-    } else if (typeNumber >= 15 && typeNumber <= 22) {
+    } else if ((typeNumber >= 15 && typeNumber <= 22) || (typeNumber >= 43 && typeNumber <= 47)) {
       return HarvestableType.Hide;
-    } else if (typeNumber >= 23 && typeNumber <= 27) {
+    } else if ((typeNumber >= 23 && typeNumber <= 27) || (typeNumber >= 48 && typeNumber <= 52)) {
       return HarvestableType.Ore;
     } else return "";
   }
