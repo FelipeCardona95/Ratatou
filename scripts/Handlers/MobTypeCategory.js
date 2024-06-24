@@ -9,5 +9,6 @@ export const MobTypeCategory = Object.freeze({
     CHEST: 'chest',
     STANDARD: 'standard',
     TRASH: 'trash',
-    CHAMPION: 'champion'
+    CHAMPION: 'champion',
+    ROAMING: 'roaming'
   });

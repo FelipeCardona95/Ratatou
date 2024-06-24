@@ -52,6 +52,21 @@ export class MobsDrawing extends DrawingUtils {
     );
   }
 
+  isStandard(h) {
+    const categoriesToCheck = [
+      MobTypeCategory.TRASH,
+      null,
+      MobTypeCategory.ROAMING,
+      MobTypeCategory.ENVIRONMENT,
+      MobTypeCategory.STANDARD,
+      MobTypeCategory.SUMMON,
+    ];
+    
+    return (
+      categoriesToCheck.includes(h.mobTypeCategory) 
+    );
+  }
+
   shouldReturnTreasureBasedOnCategory(h) {
     const chestEnemies = this.settings.returnLocalBool("settingChestEnemy");
     const categoriesToCheck = [MobTypeCategory.CHEST];
@@ -146,24 +161,27 @@ export class MobsDrawing extends DrawingUtils {
         drawHp = this.settings.livingResourcesHp;
         drawId = this.settings.livingResourcesID;
       } else if (
-        (this.shouldReturnBasedOnType(mobOne) ||
-        this.shouldReturnStandardBasedOnCategory(mobOne)) && !showMobIcons
+        (!this.shouldReturnBasedOnType(mobOne) ||
+          !this.shouldReturnStandardBasedOnCategory(mobOne)) &&
+        !showMobIcons
       ) {
-        if (this.shouldReturnStandardBasedOnCategory(mobOne) )
+        if (this.isStandard(mobOne)) {
           imageName = MobTypeCategory.STANDARD;
-        switch (mobOne.mobTypeCategory) {
-          case MobTypeCategory.CHAMPION:
-            imageName = MobTypeCategory.CHAMPION;
-            break;
-          case MobTypeCategory.MINIBOSS:
-            imageName = MobTypeCategory.MINIBOSS;
-            break;
-          case MobTypeCategory.BOSS:
-            imageName = MobTypeCategory.BOSS;
-            break;
-          default:
-            imageName = mobOne.avatar;
-            break;
+        } else {
+          switch (mobOne.mobTypeCategory) {
+            case MobTypeCategory.CHAMPION:
+              imageName = MobTypeCategory.CHAMPION;
+              break;
+            case MobTypeCategory.MINIBOSS:
+              imageName = MobTypeCategory.MINIBOSS;
+              break;
+            case MobTypeCategory.BOSS:
+              imageName = MobTypeCategory.BOSS;
+              break;
+            default:
+              imageName = mobOne.avatar;
+              break;
+          }
         }
       } else {
         imageName = mobOne.avatar;
