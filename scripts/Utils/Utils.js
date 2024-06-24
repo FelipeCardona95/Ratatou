@@ -335,7 +335,16 @@ function drawItems() {
   }
 }
 const intervalItems = 500;
-setInterval(drawItems, intervalItems);
+let lastExecutionTime = 0;
+function drawItemsWithInterval(timestamp) {
+  if (timestamp - lastExecutionTime >= intervalItems) {
+    drawItems();
+    lastExecutionTime = timestamp;
+  }
+  requestAnimationFrame(drawItemsWithInterval);
+}
+
+requestAnimationFrame(drawItemsWithInterval);
 
 function checkLocalStorage() {
   settings.update(settings);
