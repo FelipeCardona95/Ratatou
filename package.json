@@ -2,10 +2,11 @@
   "name": "AOR Extended",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "nexe -b app.js --resource \"views/**/*\" --resource \"scripts/**/*\" --verbose"
+    "build": "nexe -b app.js --resource \"views/**/*\" --resource \"scripts/**/*\" --verbose",
+    "start": "electron ."
   },
   "author": "SWMG",
   "license": "ISC",
@@ -13,7 +14,9 @@
     "buffercursor": "^0.0.12",
     "cap": "^0.2.1",
     "ejs": "^3.1.10",
+    "electron": "^31.0.2",
     "express": "^4.19.2",
+    "fs": "^0.0.1-security",
     "nan": "^2.20.0",
     "node-gyp": "^10.1.0",
     "npm": "^10.8.1",
@@ -22,5 +25,9 @@
     "readline-sync": "^1.4.10",
     "sass": "^1.77.6",
     "ws": "^8.17.1"
+  },
+  "devDependencies": {
+    "electron": "^31.0.2",
+    "electron-rebuild": "^3.2.9"
   }
 }

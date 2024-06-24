@@ -21,7 +21,7 @@
   }
 
   initGridCanvas(canvasBottom, contextBottom) {
-    this.drawBoard(canvasBottom, contextBottom);
+    contextBottom.clearRect(0, 0, canvasBottom.width, canvasBottom.height);
   }
 
   clearGrid(contextBottom, canvasBottom) {

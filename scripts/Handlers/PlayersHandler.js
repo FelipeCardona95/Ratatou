@@ -215,7 +215,7 @@ export class PlayersHandler {
 
     // Get volume from the player volume slider (converted from 0-100 to 0.0-1.0 range)
     const volume = document.getElementById("playerVolumeSlider").value / 100;
-    audio.volume = volume;
+    audio.volume = 0.05;
 
     audio.play();
   }

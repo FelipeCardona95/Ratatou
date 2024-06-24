@@ -1,57 +1,69 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>A Youtube Video ( ͡° ͜ʖ ͡°)</title>
     <style>
         body {
-            background-color: #121317;
+            background-color: rgba(0, 0, 0, 0);
+            /* Transparent background */
+            margin: 0;
+            padding: 0;
+        }
+
+        .draggable {
+            -webkit-app-region: drag;
+        }
+
+        .no-drag {
+            -webkit-app-region: no-drag;
+        }
+
+        .transparent {
+            background-color: rgba(0, 0, 0, 0);
+            /* Transparent background */
         }
 
         /* Position the canvases */
-        #mapCanvas, #gridCanvas, #ourPlayerCanvas, #drawCanvas, #nametagRangeCanvas {
+        #mapCanvas,
+        #gridCanvas,
+        #ourPlayerCanvas,
+        #drawCanvas,
+        #nametagRangeCanvas {
             position: absolute;
-            top: 0;
+            top: 100px;
             left: 0;
             margin: 10px;
         }
 
-        #gridCanvas, #playersCanvas, #rightCanvas {
+        #gridCanvas {
             border: 2px solid grey;
         }
 
         #rightCanvas {
             position: absolute;
-            top: 0;
-            left: 520px; /* Position to the right of mapCanvas which is 500px wide plus margin */
+            top: 100px;
+            left: 520px;
+            /* Position to the right of mapCanvas which is 500px wide plus margin */
             margin: 10px;
             width: 500px;
             height: 500px;
-            overflow-y: auto; /* Add vertical scroll if content overflows */
-            overflow-x: hidden; /* Prevent horizontal scroll */
+            overflow: hidden;
+            /* Prevent overflow and remove scrollbars */
         }
 
+
         #playersCanvas {
-            position: relative; /* Change to relative to stay inside the container */
+            position: absolute;
+            /* Make absolute to fit exactly in parent */
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
         }
 
         #controlsContainer {
-            position: absolute;
-            top: 520px;
-            left: 0;
-            background-color: #1a1c23;
-            color: white;
-            margin: 10px;
-            border: 1px solid gray;
-            padding: 10px;
-            cursor: pointer;
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-gap: 10px;
-            width: 500px;
-            height: 300px;
-            box-sizing: border-box;
+            display: none;
         }
 
         .control-button {
@@ -72,7 +84,12 @@
             align-items: center;
         }
 
-        #volumeLabel, #volumeSlider, #playerVolumeLabel, #playerVolumeSlider, #announcerVolumeLabel, #announcerVolumeSlider {
+        #volumeLabel,
+        #volumeSlider,
+        #playerVolumeLabel,
+        #playerVolumeSlider,
+        #announcerVolumeLabel,
+        #announcerVolumeSlider {
             margin: 5px;
             font-size: 14px;
         }
@@ -80,19 +97,33 @@
         #canvasContainer {
             position: relative;
         }
+
+        .drag-handle {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 20px;
+            height: 20px;
+            background-color: #1a1c23;
+            color: white;
+            text-align: center;
+            cursor: pointer;
+            font-size: 16px;
+        }
     </style>
 </head>
+
 <body>
-    <div id="canvasContainer">
-        <canvas id="mapCanvas" width="500" height="500"></canvas>
-        <canvas id="gridCanvas" width="500" height="500"></canvas>
-        <canvas id="ourPlayerCanvas" width="500" height="500"></canvas>
-        <div id="rightCanvas">
-            <canvas id="playersCanvas" width="500" height="500"></canvas>
+    <div id="canvasContainer" class="transparent">
+        <canvas id="mapCanvas" width="500" height="500" class="transparent"></canvas>
+        <canvas id="gridCanvas" width="500" height="500" class="transparent"></canvas>
+        <canvas id="ourPlayerCanvas" width="500" height="500" class="transparent"></canvas>
+        <div id="rightCanvas" class="no-drag">
+            <canvas id="playersCanvas" width="500" height="500" class="transparent"></canvas>
         </div>
-        <canvas id="drawCanvas" width="500" height="500"></canvas>
-        <canvas id="nametagRangeCanvas" width="500" height="500"></canvas> <!-- New canvas for nametag range -->
-        <div id="controlsContainer">
+        <canvas id="drawCanvas" width="500" height="500" class="transparent"></canvas>
+        <canvas id="nametagRangeCanvas" width="500" height="500" class="transparent"></canvas>
+        <div id="controlsContainer" class="no-drag">
             <button id="button" class="control-button">Clear the Radar</button>
             <button id="logEnemiesList" class="control-button">Log Enemies List</button>
             <button id="sonarButton" class="control-button">Enable Sonar</button>
@@ -100,17 +131,16 @@
             <button id="showNametagRangeButton" class="control-button">Show Nametag Range</button>
             <button id="toggleGridButton" class="control-button">Disable Grid</button>
             <button id="switchPositionButton" class="control-button">Switch Position</button>
-            <div id="volumeContainer">
+            <div id="volumeContainer" class="no-drag">
                 <label id="volumeLabel" for="volumeSlider">Sonar Volume:</label>
                 <input type="range" id="volumeSlider" min="0" max="100" value="2">
                 <label id="playerVolumeLabel" for="playerVolumeSlider">Player Detected Volume:</label>
-                <input type="range" id="playerVolumeSlider" min="0" max="100" value="50">
+                <input type="range" id="playerVolumeSlider" min="0" max="100" value="5">
                 <label id="announcerVolumeLabel" for="announcerVolumeSlider">Announcer Volume:</label>
-                <input type="range" id="announcerVolumeSlider" min="0" max="100" value="50"> <!-- New volume slider -->
+                <input type="range" id="announcerVolumeSlider" min="0" max="100" value="50">
             </div>
         </div>
     </div>
-
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/3.1.10/signalr.min.js"></script>
     <script src="/scripts/Handlers/HarvestablesHandler.js"></script>
@@ -123,13 +153,13 @@
     <script type="module" src="/scripts/Handlers/SpellsInfo.js"></script>
     <script type="module" src="/scripts/Utils/Utils.js"></script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             let nametagRangeEnabled = false;
             const nametagRangeCanvas = document.getElementById('nametagRangeCanvas');
             const nametagRangeContext = nametagRangeCanvas.getContext('2d');
             let controlsAtBottom = true;
 
-            $('#showNametagRangeButton').click(function() {
+            $('#showNametagRangeButton').click(function () {
                 nametagRangeEnabled = !nametagRangeEnabled;
                 $(this).text(nametagRangeEnabled ? 'Hide Nametag Range' : 'Show Nametag Range');
                 drawNametagRange();
@@ -155,11 +185,11 @@
             const drawingUtils = new DrawingUtils(settings);
             const gridCanvas = document.getElementById('gridCanvas');
             const gridContext = gridCanvas.getContext('2d');
-            let gridEnabled = true;
-            drawingUtils.initGridCanvas(gridCanvas, gridContext);
+            let gridEnabled = false;
+            drawingUtils.clearGrid(gridContext, gridCanvas);
 
             // Toggle grid button click handler
-            $('#toggleGridButton').click(function() {
+            $('#toggleGridButton').click(function () {
                 gridEnabled = !gridEnabled;
                 if (gridEnabled) {
                     drawingUtils.initGridCanvas(gridCanvas, gridContext);
@@ -171,7 +201,7 @@
             });
 
             // Switch position button click handler
-            $('#switchPositionButton').click(function() {
+            $('#switchPositionButton').click(function () {
                 controlsAtBottom = !controlsAtBottom;
                 if (controlsAtBottom) {
                     $('#controlsContainer').css({ 'top': '520px', 'left': '0' });
@@ -184,4 +214,5 @@
         });
     </script>
 </body>
+
 </html>
