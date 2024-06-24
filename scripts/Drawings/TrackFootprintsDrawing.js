@@ -8,7 +8,7 @@ export class TrackFootprintsDrawing extends DrawingUtils {
       const hX = -1 * footprint.posX + lpX;
       const hY = footprint.posY - lpY;
 
-      if (footprint.hY == 0 && footprint.hX == 0) {
+      if (footprint.hX === 0 && footprint.hY === 0) {
         footprint.hX = hX;
         footprint.hY = hY;
       }
@@ -37,9 +37,9 @@ export class TrackFootprintsDrawing extends DrawingUtils {
       const point = this.transformPoint(footprint.hX, footprint.hY);
 
       let imageName = footprint.name.toLowerCase().replace("shared_track_", "");
-      if (footprint.type === "SOLO") {
+      if (isSolo) {
         imageName = `solo_${imageName}`;
-      } else if (footprint.type === "GROUP") {
+      } else if (isGroup) {
         imageName = `group_${imageName}`;
       }
 

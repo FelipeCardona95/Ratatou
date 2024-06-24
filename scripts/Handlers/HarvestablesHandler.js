@@ -15,7 +15,6 @@ class Harvestable {
     this.posY = posY;
     this.hX = 0;
     this.hY = 0;
-
     this.charges = charges;
     this.size = size;
   }
@@ -32,167 +31,87 @@ class HarvestablesHandler {
   }
 
   addHarvestable(id, type, tier, posX, posY, charges, size) {
-    switch (this.GetStringType(type)) {
-      case HarvestableType.Fiber:
-        if (!this.settings.harvestingStaticFiber[`e${charges}`][tier - 1])
-          return;
-        break;
+    if (!this.isValidHarvestable(type, tier, charges)) return;
 
-      case HarvestableType.Hide:
-        if (!this.settings.harvestingStaticHide[`e${charges}`][tier - 1])
-          return;
-        break;
-
-      case HarvestableType.Log:
-        if (!this.settings.harvestingStaticWood[`e${charges}`][tier - 1])
-          return;
-        break;
-
-      case HarvestableType.Ore:
-        if (!this.settings.harvestingStaticOre[`e${charges}`][tier - 1]) 
-          return;
-        break;
-
-      case HarvestableType.Rock:
-        if (!this.settings.harvestingStaticRock[`e${charges}`][tier - 1])
-          return;
-        break;
-
-      default:
-        return;
-    }
-
-    var harvestable = this.harvestableList.find((item) => item.id === id);
+    let harvestable = this.harvestableList.find((item) => item.id === id);
 
     if (!harvestable) {
-      const h = new Harvestable(id, type, tier, posX, posY, charges, size);
-      this.harvestableList.push(h);
-      if (type == 49) {
-        console.log("Havest List", this.harvestableList);
-      }
-      //console.log("New Harvestable: " + h.toString());
-    } // update
-    else {
+      harvestable = new Harvestable(id, type, tier, posX, posY, charges, size);
+      this.harvestableList.push(harvestable);
+    } else {
       harvestable.setCharges(charges);
     }
   }
 
-  UpdateHarvestable(id, type, tier, posX, posY, charges, size) {
-    switch (this.GetStringType(type)) {
-      case HarvestableType.Fiber:
-        if (!this.settings.harvestingStaticFiber[`e${charges}`][tier - 1])
-          return;
-        break;
+  updateHarvestable(id, type, tier, posX, posY, charges, size) {
+    if (!this.isValidHarvestable(type, tier, charges)) return;
 
-      case HarvestableType.Hide:
-        if (!this.settings.harvestingStaticHide[`e${charges}`][tier - 1])
-          return;
-        break;
-
-      case HarvestableType.Log:
-        if (!this.settings.harvestingStaticWood[`e${charges}`][tier - 1])
-          return;
-        break;
-
-      case HarvestableType.Ore:
-        if (!this.settings.harvestingStaticOre[`e${charges}`][tier - 1])
-          return;
-        break;
-
-      case HarvestableType.Rock:
-        if (!this.settings.harvestingStaticRock[`e${charges}`][tier - 1])
-          return;
-        break;
-
-      default:
-        return;
-    }
-
-    var harvestable = this.harvestableList.find((item) => item.id === id);
+    let harvestable = this.harvestableList.find((item) => item.id === id);
     if (!harvestable) {
       this.addHarvestable(id, type, tier, posX, posY, charges, size);
-      return;
+    } else {
+      harvestable.charges = charges;
+      harvestable.size = size;
     }
-
-    harvestable.charges = charges;
-    harvestable.size = size;
   }
 
-  harvestFinished(Parameters) {
-    const id = Parameters[3];
-    const count = Parameters[5];
+  isValidHarvestable(type, tier, charges) {
+    const typeString = this.getStringType(type);
+    const enchantKey = `e${charges}`;
+    const harvestingSettings = {
+      [HarvestableType.Fiber]: this.settings.harvestingStaticFiber,
+      [HarvestableType.Hide]: this.settings.harvestingStaticHide,
+      [HarvestableType.Log]: this.settings.harvestingStaticWood,
+      [HarvestableType.Ore]: this.settings.harvestingStaticOre,
+      [HarvestableType.Rock]: this.settings.harvestingStaticRock,
+    };
 
-    this.updateHarvestable(id, count);
-  }
-
-  HarvestUpdateEvent(Parameters) {
-    const id = Parameters[0];
-
-    if (Parameters[1] === undefined) {
-      this.removeHarvestable(id);
-      return;
-    }
-
-    var harvestable = this.harvestableList.find((item) => item.id === id);
-
-    if (!harvestable) return;
-
-    harvestable.size = Parameters[1];
-  }
-
-  // Normally work with everything
-  // Good
-  newHarvestableObject(
-    id,
-    Parameters, // Update
-  ) {
-    const type = Parameters[5];
-    const tier = Parameters[7];
-    const location = Parameters[8];
-
-    let enchant = Parameters[11] === undefined ? 0 : Parameters[11];
-    let size = Parameters[10] === undefined ? 0 : Parameters[10];
-
-    this.UpdateHarvestable(
-      id,
-      type,
-      tier,
-      location[0],
-      location[1],
-      enchant,
-      size,
+    return (
+      harvestingSettings[typeString] &&
+      harvestingSettings[typeString][enchantKey] &&
+      harvestingSettings[typeString][enchantKey][tier - 1]
     );
   }
 
-  base64ToArrayBuffer(base64) {
-    var binaryString = atob(base64);
-    var bytes = new Uint8Array(binaryString.length);
-
-    for (var i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-
-    return bytes;
+  harvestFinished(parameters) {
+    const id = parameters[3];
+    const count = parameters[5];
+    this.updateHarvestableCount(id, count);
   }
 
-  // Normally work with everything
-  // Good
-  newSimpleHarvestableObject(Parameters) {
-    // Validate Parameters
-    const a0 = Parameters[0]?.data ?? [];
-    const a1 = Parameters[1]?.data ?? [];
-    const a2 = Parameters[2]?.data ?? [];
-    const a3 = Parameters[3] ?? [];
-    const a4 = Parameters[4]?.data ?? [];
-  
+  harvestUpdateEvent(parameters) {
+    const id = parameters[0];
+
+    if (parameters[1] === undefined) {
+      this.removeHarvestable(id);
+    } else {
+      const harvestable = this.harvestableList.find((item) => item.id === id);
+      if (harvestable) {
+        harvestable.size = parameters[1];
+      }
+    }
+  }
+
+  newHarvestableObject(id, parameters) {
+    const type = parameters[5];
+    const tier = parameters[7];
+    const location = parameters[8];
+    const enchant = parameters[11] || 0;
+    const size = parameters[10] || 0;
+
+    this.updateHarvestable(id, type, tier, location[0], location[1], enchant, size);
+  }
+
+  newSimpleHarvestableObject(parameters) {
+    const [a0, a1, a2, a3, a4] = parameters.map((param) => param?.data ?? []);
+
     if (a0.length === 0) return;
-  
-    // Ensure all arrays have the same length
+
     const length = a0.length;
-    if (a1.length !== length || a2.length !== length || a3.length !== length * 2 || a4.length !== length) {
+    if ([a1, a2, a3, a4].some((arr) => arr.length !== length)) {
       throw new Error("Parameter arrays have inconsistent lengths");
     }
-  
+
     for (let i = 0; i < length; i++) {
       const id = a0[i];
       const type = a1[i];
@@ -200,27 +119,21 @@ class HarvestablesHandler {
       const posX = a3[i * 2];
       const posY = a3[i * 2 + 1];
       const count = a4[i];
-  
+
       this.addHarvestable(id, type, tier, posX, posY, 0, count);
     }
   }
 
   removeNotInRange(lpX, lpY) {
     this.harvestableList = this.harvestableList.filter(
-      (x) => this.calculateDistance(lpX, lpY, x.posX, x.posY) <= 80,
-    );
-
-    this.harvestableList = this.harvestableList.filter(
-      (item) => item.size !== undefined,
+      (x) => this.calculateDistance(lpX, lpY, x.posX, x.posY) <= 80 && x.size !== undefined
     );
   }
 
   calculateDistance(lpX, lpY, posX, posY) {
     const deltaX = lpX - posX;
     const deltaY = lpY - posY;
-    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-
-    return distance;
+    return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
   }
 
   removeHarvestable(id) {
@@ -231,15 +144,14 @@ class HarvestablesHandler {
     return [...this.harvestableList];
   }
 
-  updateHarvestable(harvestableId, count) {
-    const harvestable = this.harvestableList.find((h) => h.id == harvestableId);
-
+  updateHarvestableCount(id, count) {
+    const harvestable = this.harvestableList.find((h) => h.id === id);
     if (harvestable) {
-      harvestable.size = harvestable.size - count;
+      harvestable.size -= count;
     }
   }
 
-  GetStringType(typeNumber) {
+  getStringType(typeNumber) {
     if ((typeNumber >= 0 && typeNumber <= 5) || (typeNumber >= 28 && typeNumber <= 32)) {
       return HarvestableType.Log;
     } else if ((typeNumber >= 6 && typeNumber <= 10) || (typeNumber >= 33 && typeNumber <= 37)) {
@@ -250,6 +162,8 @@ class HarvestablesHandler {
       return HarvestableType.Hide;
     } else if ((typeNumber >= 23 && typeNumber <= 27) || (typeNumber >= 48 && typeNumber <= 52)) {
       return HarvestableType.Ore;
-    } else return "";
+    } else {
+      return "";
+    }
   }
 }

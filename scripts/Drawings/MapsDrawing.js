@@ -12,45 +12,42 @@ export class MapDrawing extends DrawingUtils {
   }
 
   Draw(ctx, curr_map) {
-    //const point = this.transformPoint(curr_map.hX, curr_map.hY);
-
     if (curr_map.id < 0) return;
 
+    const scaleFactor = 4;
     this.DrawImageMap(
       ctx,
-      curr_map.hX * 4,
-      curr_map.hY * 4,
+      curr_map.hX * scaleFactor,
+      curr_map.hY * scaleFactor,
       curr_map.id.toString(),
-      825 * 4,
+      825 * scaleFactor,
       curr_map,
     );
   }
 
   DrawImageMap(ctx, x, y, imageName, size, curr_map) {
-    // Fill background => if no map image or corner to prevent glitch textures
-    ctx.fillStyle = "#1a1c23";
+    const mapBackgroundColor = "#1a1c23";
+    const rotationAngle = -0.785398; // -45 degrees in radians
+
+    // Fill background to prevent glitch textures
+    ctx.fillStyle = mapBackgroundColor;
     ctx.fillRect(0, 0, ctx.width, ctx.height);
 
     if (!this.settings.showMapBackground) return;
+    if (!imageName) return;
 
-    if (imageName === undefined || imageName == "undefined") return;
-
-    const src = "/images/Maps/" + imageName + ".png";
-
+    const src = `/images/Maps/${imageName}.png`;
     const preloadedImage = this.settings.GetPreloadedImage(src, "Maps");
-
-    if (preloadedImage === null) return;
 
     if (preloadedImage) {
       ctx.save();
 
       ctx.scale(1, -1);
       ctx.translate(250, -250);
-
-      ctx.rotate(-0.785398);
+      ctx.rotate(rotationAngle);
       ctx.translate(-x, y);
-
       ctx.drawImage(preloadedImage, -size / 2, -size / 2, size, size);
+
       ctx.restore();
     } else {
       this.settings

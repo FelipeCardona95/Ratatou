@@ -5,116 +5,49 @@ export class MobsDrawing extends DrawingUtils {
     super(Settings);
   }
 
-  interpolate(mobs, mists, lpX, lpY, t) {
-    for (const mobOne of mobs) {
-      const hX = -1 * mobOne.posX + lpX;
-      const hY = mobOne.posY - lpY;
+  interpolate(entities, lpX, lpY, t) {
+    for (const entity of entities) {
+      const hX = -1 * entity.posX + lpX;
+      const hY = entity.posY - lpY;
 
-      if (mobOne.hY == 0 && mobOne.hX == 0) {
-        mobOne.hX = hX;
-        mobOne.hY = hY;
+      if (entity.hX === 0 && entity.hY === 0) {
+        entity.hX = hX;
+        entity.hY = hY;
       }
 
-      mobOne.hX = this.lerp(mobOne.hX, hX, t);
-      mobOne.hY = this.lerp(mobOne.hY, hY, t);
+      entity.hX = this.lerp(entity.hX, hX, t);
+      entity.hY = this.lerp(entity.hY, hY, t);
     }
+  }
 
-    for (const mistOne of mists) {
-      const hX = -1 * mistOne.posX + lpX;
-      const hY = mistOne.posY - lpY;
+  shouldReturnBasedOnSettings(entity, settingKey, category) {
+    const settingValue = this.settings.returnLocalBool(settingKey);
+    return entity.mobTypeCategory === category && !settingValue;
+  }
 
-      if (mistOne.hY == 0 && mistOne.hX == 0) {
-        mistOne.hX = hX;
-        mistOne.hY = hY;
+  shouldReturnBasedOnPrefab(entity) {
+    const settings = this.settings;
+    if (entity.prefab.includes("MOB_AVALON_TREASURE_MINION")) {
+      return !settings.returnLocalBool("settingAvaloneDrones");
+    }
+    if (/MISTS.*BOSS/.test(entity.prefab)) {
+      if (entity.prefab.includes("FAIRYDRAGON")) {
+        return !settings.returnLocalBool("settingBossFairyDragon");
       }
-
-      mistOne.hX = this.lerp(mistOne.hX, hX, t);
-      mistOne.hY = this.lerp(mistOne.hY, hY, t);
+      if (entity.uniqueName.includes("MISTS_SPIDER")) {
+        return !settings.returnLocalBool("settingBossVeilWeaver");
+      }
+      if (entity.uniqueName.includes("GRIFFIN")) {
+        return !settings.returnLocalBool("settingBossGriffin");
+      }
     }
-  }
-
-  shouldReturnStandardBasedOnCategory(h) {
-    const standardEnemies = this.settings.returnLocalBool(
-      "settingStandardEnemy"
-    );
-    const categoriesToCheck = [
-      MobTypeCategory.TRASH,
-      null,
-      MobTypeCategory.ROAMING,
-      MobTypeCategory.ENVIRONMENT,
-      MobTypeCategory.STANDARD,
-      MobTypeCategory.SUMMON,
-    ];
-    return (
-      categoriesToCheck.includes(h.mobTypeCategory) &&
-      !standardEnemies &&
-      h.type == "Unknown"
-    );
-  }
-
-  isStandard(h) {
-    const categoriesToCheck = [
-      MobTypeCategory.TRASH,
-      null,
-      MobTypeCategory.ROAMING,
-      MobTypeCategory.ENVIRONMENT,
-      MobTypeCategory.STANDARD,
-      MobTypeCategory.SUMMON,
-    ];
-    
-    return (
-      categoriesToCheck.includes(h.mobTypeCategory) 
-    );
-  }
-
-  shouldReturnTreasureBasedOnCategory(h) {
-    const chestEnemies = this.settings.returnLocalBool("settingChestEnemy");
-    const categoriesToCheck = [MobTypeCategory.CHEST];
-    return categoriesToCheck.includes(h.mobTypeCategory) && !chestEnemies;
-  }
-
-  shouldReturnBasedOnType(h) {
-    const miniBossEnemies = this.settings.returnLocalBool(
-      "settingMiniBossEnemy"
-    );
-    const championEnemies = this.settings.returnLocalBool(
-      "settingChampionEnemy"
-    );
-    const bossEnemies = this.settings.returnLocalBool("settingBossEnemy");
-    if (h.mobTypeCategory === MobTypeCategory.CHAMPION && !championEnemies)
-      return true;
-    if (h.mobTypeCategory === MobTypeCategory.MINIBOSS && !miniBossEnemies)
-      return true;
-    if (h.mobTypeCategory === MobTypeCategory.BOSS && !bossEnemies) return true;
-    return false;
-  }
-
-  shouldReturnBasedOnPrefab(h) {
-    const avaloneDrones = this.settings.returnLocalBool("settingAvaloneDrones");
-    const bossCrystalSpider = this.settings.returnLocalBool(
-      "settingBossCrystalSpider"
-    );
-    const bossFairyDragon = this.settings.returnLocalBool(
-      "settingBossFairyDragon"
-    );
-    const bossVeilWeaver = this.settings.returnLocalBool(
-      "settingBossVeilWeaver"
-    );
-    const bossGriffin = this.settings.returnLocalBool("settingBossGriffin");
-    if (h.prefab.includes("MOB_AVALON_TREASURE_MINION")) {
-      if (!avaloneDrones) return true;
-    } else if (/MISTS.*BOSS/.test(h.prefab)) {
-      if (h.prefab.includes("FAIRYDRAGON") && !bossFairyDragon) return true;
-      if (h.uniqueName.includes("MISTS_SPIDER") && !bossVeilWeaver) return true;
-      if (h.uniqueName.includes("GRIFFIN") && !bossGriffin) return true;
-    } else if (h.prefab.includes("_EVENT_")) {
-      if (!this.settings.showEventEnemies) return true;
-    } else if (h.uniqueName.includes("CRYSTALSPIDER") && !bossCrystalSpider) {
-      return true;
-    } else if (!this.settings.showUnmanagedEnemies) {
-      return true;
+    if (entity.prefab.includes("_EVENT_")) {
+      return !settings.showEventEnemies;
     }
-    return false;
+    if (entity.uniqueName.includes("CRYSTALSPIDER")) {
+      return !settings.returnLocalBool("settingBossCrystalSpider");
+    }
+    return !settings.showUnmanagedEnemies;
   }
 
   invalidate(ctx, mobs, mists) {
@@ -122,49 +55,65 @@ export class MobsDrawing extends DrawingUtils {
     const minFame = localStorage.getItem("settingMinFame");
     const showMobIcons = this.settings.returnLocalBool("settingShowMobIcons");
 
-    for (const mobOne of mobs) {
+    const shouldReturnEntity = (entity) => {
       if (
-        mobOne.health < minHP &&
-        mobOne.type == "Unknown" &&
-        mobOne.mobTypeCategory != MobTypeCategory.CHEST
-      )
-        continue;
-      if (
-        mobOne.fame < minFame &&
-        mobOne.type == "Unknown" &&
-        mobOne.mobTypeCategory != MobTypeCategory.CHEST
-      )
-        continue;
-      if (
-        this.shouldReturnStandardBasedOnCategory(mobOne) ||
-        this.shouldReturnBasedOnType(mobOne) ||
-        this.shouldReturnBasedOnPrefab(mobOne) ||
-        this.shouldReturnTreasureBasedOnCategory(mobOne)
+        (entity.health < minHP || entity.fame < minFame) &&
+        entity.type === "Unknown" &&
+        entity.mobTypeCategory !== MobTypeCategory.CHEST
       ) {
-        continue;
+        return true;
       }
-      const point = this.transformPoint(mobOne.hX, mobOne.hY);
+      if (
+        this.shouldReturnBasedOnSettings(
+          entity,
+          "settingStandardEnemy",
+          MobTypeCategory.STANDARD
+        ) ||
+        this.shouldReturnBasedOnSettings(
+          entity,
+          "settingChestEnemy",
+          MobTypeCategory.CHEST
+        ) ||
+        this.shouldReturnBasedOnSettings(
+          entity,
+          "settingMiniBossEnemy",
+          MobTypeCategory.MINIBOSS
+        ) ||
+        this.shouldReturnBasedOnSettings(
+          entity,
+          "settingChampionEnemy",
+          MobTypeCategory.CHAMPION
+        ) ||
+        this.shouldReturnBasedOnSettings(
+          entity,
+          "settingBossEnemy",
+          MobTypeCategory.BOSS
+        ) ||
+        this.shouldReturnBasedOnPrefab(entity)
+      ) {
+        return true;
+      }
+      return false;
+    };
 
+    for (const mobOne of mobs) {
+      if (shouldReturnEntity(mobOne)) continue;
+
+      const point = this.transformPoint(mobOne.hX, mobOne.hY);
       let imageName = undefined;
-      let imageFolder = "Resources"; // Default to Resources folder
+      let imageFolder = "Resources";
       let sizeImg = 40;
-      /* Set by default to enemy, since there are more, so we don't add at each case */
       let drawHp = this.settings.enemiesHP;
       let drawId = this.settings.enemiesID;
 
       if (
-        mobOne.type == "LivingSkinnable" ||
-        mobOne.type == "LivingHarvestable"
+        mobOne.type === "LivingSkinnable" ||
+        mobOne.type === "LivingHarvestable"
       ) {
-        imageName =
-          mobOne.name + "_" + mobOne.tier + "_" + mobOne.enchantmentLevel;
+        imageName = `${mobOne.name}_${mobOne.tier}_${mobOne.enchantmentLevel}`;
         drawHp = this.settings.livingResourcesHp;
         drawId = this.settings.livingResourcesID;
-      } else if (
-        (!this.shouldReturnBasedOnType(mobOne) ||
-          !this.shouldReturnStandardBasedOnCategory(mobOne)) &&
-        !showMobIcons
-      ) {
+      } else if (!showMobIcons && !this.isStandard(mobOne)) {
         if (this.isStandard(mobOne)) {
           imageName = MobTypeCategory.STANDARD;
         } else {
@@ -180,7 +129,6 @@ export class MobsDrawing extends DrawingUtils {
               break;
             default:
               imageName = mobOne.avatar;
-              break;
           }
         }
       } else {
@@ -189,20 +137,13 @@ export class MobsDrawing extends DrawingUtils {
         sizeImg = 60;
       }
 
-      if (imageName !== undefined)
-        this.DrawCustomImage(
-          ctx,
-          point.x,
-          point.y,
-          imageName,
-          imageFolder,
-          sizeImg
-        );
-      else this.drawFilledCircle(ctx, point.x, point.y, 10, "#4169E1"); // Unmanaged ids
+      if (imageName) {
+        this.DrawCustomImage(ctx, point.x, point.y, imageName, imageFolder, sizeImg);
+      } else {
+        this.drawFilledCircle(ctx, point.x, point.y, 10, "#4169E1");
+      }
 
       if (drawHp) {
-        // TODO
-        // Draw health bar?
         const textWidth = ctx.measureText(mobOne.health).width;
         this.drawTextItems(
           point.x - textWidth / 2,
@@ -214,26 +155,23 @@ export class MobsDrawing extends DrawingUtils {
         );
       }
 
-      if (drawId) this.drawText(point.x, point.y - 20, mobOne.typeId, ctx);
+      if (drawId) {
+        this.drawText(point.x, point.y - 20, mobOne.typeId, ctx);
+      }
     }
 
-    /* Mist portals */
-    for (const mistsOne of mists) {
-      if (!this.settings.mistEnchants[mistsOne.enchant]) {
-        continue;
-      }
-
+    for (const mistOne of mists) {
+      if (!this.settings.mistEnchants[mistOne.enchant]) continue;
       if (
-        (this.settings.mistSolo && mistsOne.type == 0) ||
-        (this.settings.mistDuo == true && mistsOne.type == 1)
+        (this.settings.mistSolo && mistOne.type === 0) ||
+        (this.settings.mistDuo && mistOne.type === 1)
       ) {
-        // Change image folder
-        const point = this.transformPoint(mistsOne.hX, mistsOne.hY);
+        const point = this.transformPoint(mistOne.hX, mistOne.hY);
         this.DrawCustomImage(
           ctx,
           point.x,
           point.y,
-          "mist_" + mistsOne.enchant,
+          `mist_${mistOne.enchant}`,
           "Resources",
           30
         );

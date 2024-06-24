@@ -6,7 +6,7 @@ class Player {
     posY,
     id,
     nickname,
-    guildName1,
+    guildName,
     currentHealth,
     initialHealth,
     items,
@@ -20,7 +20,7 @@ class Player {
     this.oldPosY = posY;
     this.id = id;
     this.nickname = nickname;
-    this.guildName = guildName1;
+    this.guildName = guildName;
     this.alliance = alliance;
     this.hX = 0;
     this.hY = 0;
@@ -30,10 +30,10 @@ class Player {
     this.flagId = flagId;
     this.mounted = false; // Initialize mounted status as false
     if (Array.isArray(spells) && spells.length >= 6) {
-      this.spells = new SpellSlots (spells[0], spells[1], spells[2], spells[4], spells[3], spells[5]);
-  } else {
-      this.spells = new SpellSlots ();
-  }
+      this.spells = new SpellSlots(spells[0], spells[1], spells[2], spells[4], spells[3], spells[5]);
+    } else {
+      this.spells = new SpellSlots();
+    }
   }
 
   setMounted(mounted) {
@@ -48,33 +48,30 @@ export class PlayersHandler {
     this.invalidate = false;
 
     this.settings = settings;
-
     this.filteredPlayers = [];
     this.filteredGuilds = [];
     this.filteredAlliances = [];
-
     this.alreadyFilteredPlayers = [];
-
     this.spellInfo = spellsInfo;
     this.castedSpells = {};
 
+    this.initializeIgnoreList();
+  }
+
+  initializeIgnoreList() {
     this.settings.ignoreList.forEach((element) => {
       const name = element["Name"];
-
       switch (element["Type"]) {
         case "Player":
           this.filteredPlayers.push(name);
           break;
-
         case "Guild":
           this.filteredGuilds.push(name);
           break;
-
         case "Alliance":
           this.filteredAlliances.push(name);
           break;
-
-        default: // Default is player
+        default:
           this.filteredPlayers.push(name);
           break;
       }
@@ -82,69 +79,43 @@ export class PlayersHandler {
   }
 
   getPlayersInRange() {
-    try {
-      return [...this.playersInRange]; // Create a copy of the array
-    } finally {}
+    return [...this.playersInRange];
   }
 
-  updateItems(id, Parameters) {
-    let items = null;
-
-    try {
-      items = Parameters[2];
-    } catch {
-      items = null;
-    }
-
-    if (items != null) {
-      this.playersInRange.forEach((playerOne) => {
-        if (playerOne.id === id) {
-          playerOne.items = items;
-        }
-      });
+  updateItems(id, parameters) {
+    const items = parameters[2] || null;
+    if (items) {
+      const player = this.playersInRange.find((p) => p.id === id);
+      if (player) {
+        player.items = items;
+      }
     }
   }
 
-  handleNewPlayerEvent(Parameters) {
+  handleNewPlayerEvent(parameters) {
     if (!this.settings.settingOnOff) return;
 
-    /* General */
-    const id = Parameters[0];
-    const nickname = Parameters[1];
+    const id = parameters[0];
+    const nickname = parameters[1];
 
-    if (this.alreadyFilteredPlayers.find((name) => name === nickname.toUpperCase())) return;
+    if (this.isPlayerFiltered(nickname)) return;
 
-    if (this.filteredPlayers.find((name) => name === nickname.toUpperCase())) {
-      this.alreadyFilteredPlayers.push(nickname.toUpperCase());
-    }
-
-    const guildName = String(Parameters[8]);
-
+    const guildName = String(parameters[8]);
     if (this.filteredGuilds.find((name) => name === guildName.toUpperCase())) {
       this.alreadyFilteredPlayers.push(nickname.toUpperCase());
     }
 
-    const alliance = String(Parameters[49]);
-
+    const alliance = String(parameters[49]);
     if (this.filteredAlliances.find((name) => name === alliance.toUpperCase())) {
       this.alreadyFilteredPlayers.push(nickname.toUpperCase());
     }
 
-    /* Position */
-    var positionArray = Parameters[14];
-    const posX = positionArray[0];
-    const posY = positionArray[1];
-
-    /* Health */
-    const currentHealth = Parameters[20];
-    const initialHealth = Parameters[21];
-
-    /* Items & flag */
-    const items = Parameters[38];
-    const flagId = Parameters[51];
-
-    /* Spells */
-    const spells = Parameters[41];
+    const [posX, posY] = parameters[14];
+    const currentHealth = parameters[20];
+    const initialHealth = parameters[21];
+    const items = parameters[38];
+    const flagId = parameters[51];
+    const spells = parameters[41];
 
     this.addPlayer(
       posX,
@@ -162,18 +133,22 @@ export class PlayersHandler {
     );
   }
 
-  handleMountedPlayerEvent(id, parameters) {
-    let ten = parameters[10];
-
-    let mounted = parameters[11];
-
-    if (mounted == "true" || mounted == true) {
-      this.updatePlayerMounted(id, true);
-    } else if (ten == "-1") {
-      this.updatePlayerMounted(id, true);
-    } else {
-      this.updatePlayerMounted(id, false);
+  isPlayerFiltered(nickname) {
+    const upperNickname = nickname.toUpperCase();
+    if (
+      this.alreadyFilteredPlayers.includes(upperNickname) ||
+      this.filteredPlayers.includes(upperNickname)
+    ) {
+      this.alreadyFilteredPlayers.push(upperNickname);
+      return true;
     }
+    return false;
+  }
+
+  handleMountedPlayerEvent(id, parameters) {
+    const mounted =
+      parameters[11] === "true" || parameters[11] === true || parameters[10] === "-1";
+    this.updatePlayerMounted(id, mounted);
   }
 
   addPlayer(
@@ -190,9 +165,7 @@ export class PlayersHandler {
     spells,
     alliance
   ) {
-    const existingPlayer = this.playersInRange.find((player) => player.id === id);
-
-    if (existingPlayer) return;
+    if (this.playersInRange.some((player) => player.id === id)) return;
 
     const player = new Player(
       posX,
@@ -209,11 +182,13 @@ export class PlayersHandler {
     );
     this.playersInRange.push(player);
 
-    if (!sound) return;
+    if (sound) {
+      this.playSound();
+    }
+  }
 
+  playSound() {
     const audio = new Audio("/sounds/player.mp3");
-
-    // Get volume from the player volume slider (converted from 0-100 to 0.0-1.0 range)
     const volume = document.getElementById("playerVolumeSlider").value / 100;
     audio.volume = volume;
 
@@ -221,16 +196,13 @@ export class PlayersHandler {
   }
 
   updateLocalPlayerNextPosition(posX, posY) {
-    // TODO: Implement update local player next position
     throw new Error("Not implemented");
   }
 
   updatePlayerMounted(id, mounted) {
-    for (const player of this.playersInRange) {
-      if (player.id === id) {
-        player.setMounted(mounted);
-        break;
-      }
+    const player = this.playersInRange.find((p) => p.id === id);
+    if (player) {
+      player.setMounted(mounted);
     }
   }
 
@@ -239,74 +211,75 @@ export class PlayersHandler {
   }
 
   updateLocalPlayerPosition(posX, posY) {
-    // Implement a local player lock mechanism
     this.localPlayer.posX = posX;
     this.localPlayer.posY = posY;
   }
 
   localPlayerPosX() {
-    // Implement a local player lock mechanism
     return this.localPlayer.posX;
   }
 
   localPlayerPosY() {
-    // Implement a local player lock mechanism
     return this.localPlayer.posY;
   }
 
   updatePlayerPosition(id, posX, posY) {
-    for (const player of this.playersInRange) {
-      if (player.id === id) {
-        player.posX = posX;
-        player.posY = posY;
+    const player = this.playersInRange.find((p) => p.id === id);
+    if (player) {
+      player.posX = posX;
+      player.posY = posY;
+    }
+  }
+
+  updatePlayerHealth(parameters) {
+    const player = this.playersInRange.find((p) => p.id === parameters[0]);
+    if (player) {
+      player.currentHealth = parameters[2];
+      player.initialHealth = parameters[3];
+    }
+  }
+
+  updateSpells(playerId, parameters) {
+    const spells = this.parseSpells(parameters[6]);
+    const player = this.playersInRange.find((p) => p.id === playerId);
+    if (player) {
+      player.spells = spells;
+    }
+  }
+
+  parseSpells(spellData) {
+    try {
+      return new SpellSlots(
+        spellData[0],
+        spellData[1],
+        spellData[2],
+        spellData[4],
+        spellData[3],
+        spellData[5]
+      );
+    } catch {
+      return new SpellSlots(65535, 65535, 65535, 65535, 65535, 65535);
+    }
+  }
+
+  handleCastSpell(parameters) {
+    const { playerId, spellId } = parameters;
+    const spell = this.spellInfo.spellList[spellId];
+    if (spell) {
+      const expirationTime = new Date();
+      expirationTime.setSeconds(expirationTime.getSeconds() + spell.cooldown);
+      this.castedSpells[`${playerId}_${spell.parentId || spell.id}`] = expirationTime;
+    }
+  }
+
+  removeSpellsWithoutCooldown() {
+    const now = new Date();
+    for (const key in this.castedSpells) {
+      if (this.castedSpells[key] < now) {
+        delete this.castedSpells[key];
       }
     }
   }
-
-  UpdatePlayerHealth(Parameters) {
-    var uPlayer = this.playersInRange.find((player) => player.id === Parameters[0]);
-
-    if (!uPlayer) return;
-
-    uPlayer.currentHealth = Parameters[2];
-    uPlayer.initialHealth = Parameters[3];
-  }
-
-  updateSpells(playerId, Parameters) {
-    let spells = new SpellSlots(65535, 65535, 65535, 65535, 65535, 65535);
-    let spellData = {};
-    try {
-        spellData = Parameters[6];
-        spells = new SpellSlots(spellData[0], spellData[1], spellData[2], spellData[4], spellData[3], spellData[5]);
-    } catch (error) {
-        spells = new SpellSlots(65535, 65535, 65535, 65535, 65535, 65535);
-    }
-    this.playersInRange.forEach(player => {
-        if (player.id === playerId) {
-            player.spells = spells;
-        }
-    });
-}
-
-handleCastSpell(Parameters) {
-    const { playerId, spellId } = Parameters;
-    if (spellId in this.spellInfo.spellList) {
-        const spell = this.spellInfo.spellList[spellId];
-        const expirationTime = new Date();
-        expirationTime.setSeconds(expirationTime.getSeconds() + spell.cooldown);
-        this.castedSpells[`${playerId}_${spell.parentId ? spell.parentId : spell.id}`] = expirationTime;
-    }
-}
-
-removeSpellsWithoutCooldown() {
-    const now = new Date();
-    for (const key in this.castedSpells) {
-        if (this.castedSpells[key] < now) {
-            delete this.castedSpells[key];
-        }
-    }
-}
-
 
   clear() {
     this.playersInRange = [];

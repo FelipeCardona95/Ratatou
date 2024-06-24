@@ -18,52 +18,36 @@ export class FishingHandler {
     this.fishes = [];
   }
 
-  NewFishEvent(Parameters) {
+  newFishEvent(parameters) {
     if (!this.settings.showFish) return;
 
-    const id = Parameters[0];
-    const type = Parameters[4];
-    const coor = Parameters[1];
-    const sizeSpawned = Parameters[2];
-    const sizeLeftToSpawn = Parameters[3];
+    const [id, coor, sizeSpawned, sizeLeftToSpawn, type] = parameters;
+    if (!type || !coor) return;
 
-    if (!type) return;
-    if (!coor) return;
-
-    const posX = coor[0];
-    const posY = coor[1];
+    const [posX, posY] = coor;
 
     this.upsertFish(id, posX, posY, type, sizeSpawned, sizeLeftToSpawn);
   }
 
-  upsertFish(...args) {
-    const fish = new Fish(...args);
+  upsertFish(id, posX, posY, type, sizeSpawned, sizeLeftToSpawn) {
+    const fish = new Fish(id, posX, posY, type, sizeSpawned, sizeLeftToSpawn);
 
-    const index = this.fishes.findIndex((f) => f.id == fish.id);
-    if (index != -1) {
+    const index = this.fishes.findIndex((f) => f.id === fish.id);
+    if (index !== -1) {
       this.fishes[index] = fish;
-      return;
+    } else {
+      this.fishes.push(fish);
     }
-
-    this.fishes.push(fish);
   }
 
-  // TODO
-  FishingEnd(Parameters) {
+  fishingEnd(parameters) {
     if (!this.settings.showFish) return;
 
-    console.log("Fishing END:");
-    console.log(Parameters);
-    console.log();
-
-    const id = Parameters[0];
-
-    if (!this.fishes.some((fish) => fish.id === id)) return;
-
-    this.RemoveFish(id);
+    const [id] = parameters;
+    this.removeFish(id);
   }
 
-  RemoveFish(id) {
+  removeFish(id) {
     this.fishes = this.fishes.filter((fish) => fish.id !== id);
   }
 }

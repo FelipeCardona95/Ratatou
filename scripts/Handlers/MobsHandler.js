@@ -1,6 +1,5 @@
 import { mobsData } from "/scripts/data/mobsData.js"; // Adjust the path as necessary
 
-
 class Mob {
   constructor(id, typeId, posX, posY, health, enchantmentLevel, rarity) {
     this.id = id;
@@ -23,7 +22,6 @@ class Mob {
   }
 }
 
-// MIST PORTALS ??
 class Mist {
   constructor(id, posX, posY, name, enchant) {
     this.id = id;
@@ -33,315 +31,177 @@ class Mist {
     this.enchant = enchant;
     this.hX = 0;
     this.hY = 0;
-
-    if (name.toLowerCase().includes("solo")) {
-      this.type = 0;
-    } else {
-      this.type = 1;
-    }
+    this.type = name.toLowerCase().includes("solo") ? 0 : 1;
   }
 }
 
 export class MobsHandler {
   constructor(settings) {
     this.settings = settings;
-
     this.mobsList = [];
     this.mistList = [];
-    this.mobinfo = {};
-
     this.harvestablesNotGood = [];
 
-    const logEnemiesList = document.getElementById("logEnemiesList");
-    if (logEnemiesList)
-      logEnemiesList.addEventListener("click", () =>
-        console.log(this.mobsList)
-      );
     this.mobsData = this.transformMobsData(mobsData);
+
+    const logEnemiesList = document.getElementById("logEnemiesList");
+    if (logEnemiesList) {
+      logEnemiesList.addEventListener("click", () => console.log(this.mobsList));
+    }
   }
 
   transformMobsData(data) {
-    const transformedData = {};
-
-    data.forEach((mob) => {
-      transformedData[mob.id] = mob;
-    });
-
-    return transformedData;
+    return data.reduce((acc, mob) => {
+      acc[mob.id] = mob;
+      return acc;
+    }, {});
   }
 
   getMobById(id) {
     return this.mobsData[id];
   }
-  
+
   clear() {
     this.mobsList = [];
     this.mistList = [];
   }
 
-  NewMobEvent(parameters) {
-    const id = parseInt(parameters[0]); // entity id
-    let typeId = parseInt(parameters[1]); // real type id
-    const loc = parameters[7];
-    let posX = loc[0];
-    let posY = loc[1];
+  newMobEvent(parameters) {
+    const id = parseInt(parameters[0]);
+    const typeId = parseInt(parameters[1]);
+    const [posX, posY] = parameters[7];
+    const exp = parseFloat(parameters[13]) || 0;
+    const name = parameters[32] || parameters[31] || null;
+    const enchant = parseInt(parameters[33]) || 0;
+    const rarity = parseInt(parameters[19]) || 1;
 
-    let exp = 0;
-    try {
-      exp = parseFloat(parameters[13]);
-    } catch (error) {
-      exp = 0;
+    if (name) {
+      this.addMist(id, posX, posY, name, enchant);
+    } else {
+      this.addEnemy(id, typeId, posX, posY, exp, enchant, rarity);
+    }
+  }
+
+  addEnemy(id, typeId, posX, posY, health, enchant, rarity) {
+    typeId -= 14;
+
+    if (this.mobsList.some((mob) => mob.id === id) || this.harvestablesNotGood.some((mob) => mob.id === id)) {
+      return;
     }
 
-    let name = null;
-    try {
-      name = parameters[32];
-    } catch (error) {
-      try {
-        name = parameters[31];
-      } catch (error2) {
-        name = null;
+    const mob = new Mob(id, typeId, posX, posY, health, enchant, rarity);
+
+    if (this.mobsData[typeId]) {
+      const mobInfo = this.getMobById(typeId);
+      Object.assign(mob, {
+        tier: mobInfo.tier,
+        mobTypeCategory: mobInfo.mobtypecategory,
+        uniqueName: mobInfo.uniquename,
+        avatar: mobInfo.avatar,
+        prefab: mobInfo.prefab,
+        type: this.assignTypeBasedOnPrefab(mobInfo.prefab),
+        name: this.assignNameBasedOnPrefab(mobInfo.prefab),
+        fame: mobInfo.fame,
+      });
+
+      if (this.isInvalidHarvestable(mob, enchant)) {
+        this.harvestablesNotGood.push(mob);
+        return;
       }
     }
 
-    let enchant = 0;
-    try {
-      enchant = parameters[33];
-    } catch (error) {
-      enchant = 0;
-    }
-
-    let rarity = 1;
-    try {
-      rarity = parseInt(parameters[19]);
-    } catch (error) {
-      rarity = 1;
-    }
-
-    if (name != null) {
-      this.AddMist(id, posX, posY, name, enchant);
-    } else {
-      this.AddEnemy(id, typeId, posX, posY, exp, enchant, rarity);
-    }
+    this.mobsList.push(mob);
   }
 
-  AddEnemy(id, typeId, posX, posY, health, enchant, rarity) {
+  assignNameBasedOnPrefab(prefab) {
+    if (prefab.includes("_HIDE_")) return "hide";
+    if (prefab.includes("_WOOD_")) return "Logs";
+    if (prefab.includes("_ORE_")) return "ore";
+    if (prefab.includes("_FIBER_")) return "fiber";
+    if (prefab.includes("_ROCK_")) return "rock";
+    return "unknown";
+  }
 
-    typeId -=14;
-    if (this.mobsList.some((mob) => mob.id === id)) return;
+  assignTypeBasedOnPrefab(prefab) {
+    if (prefab.includes("_HIDE_")) return "LivingSkinnable";
+    if (["_WOOD_", "_ORE_", "_FIBER_", "_ROCK_"].some((material) => prefab.includes(material))) return "LivingHarvestable";
+    return "Unknown";
+  }
 
-    if (this.harvestablesNotGood.some((mob) => mob.id === id)) return;
+  isInvalidHarvestable(mob, enchant) {
+    if (mob.type === "LivingSkinnable") {
+      return !this.settings.harvestingLivingHide[`e${enchant}`][mob.tier - 1];
+    }
 
-    const h = new Mob(id, typeId, posX, posY, health, enchant, rarity);
+    if (mob.type === "LivingHarvestable") {
+      const harvestingSettings = {
+        "_FIBER_": this.settings.harvestingLivingFiber,
+        "_HIDE_": this.settings.harvestingLivingHide,
+        "_WOOD_": this.settings.harvestingLivingWood,
+        "_ORE_": this.settings.harvestingLivingOre,
+        "_ROCK_": this.settings.harvestingLivingRock,
+      };
 
-    // TODO
-    // List of enemies
-    if (this.mobsData[typeId] != null) {
-      const mobsInfo = this.getMobById(typeId);
-      h.tier = mobsInfo.tier;
-      h.mobTypeCategory = mobsInfo.mobtypecategory;
-      h.uniqueName = mobsInfo.uniquename;
-      h.avatar = mobsInfo.avatar;
-      h.prefab = mobsInfo.prefab;
-      h.type =  this.assignTypeBasedOnPrefab(mobsInfo.prefab);
-      h.name = this.assignNameBasedOnPrefab(mobsInfo.prefab);
-      h.fame = mobsInfo.fame;
-      if (h.type == "LivingSkinnable") {
-        if (!this.settings.harvestingLivingHide[`e${enchant}`][h.tier - 1]) {
-          this.harvestablesNotGood.push(h);
-          return;
+      for (const [key, setting] of Object.entries(harvestingSettings)) {
+        if (mob.prefab.includes(key) && !setting[`e${enchant}`][mob.tier - 1]) {
+          return true;
         }
-      } else if (h.type == "LivingHarvestable") {
-        let iG = true;
-
-        if (h.prefab.includes("_FIBER_")) {
-          if (!this.settings.harvestingLivingFiber[`e${enchant}`][h.tier - 1]) {
-            iG = false;
-          }
-        } else if (h.prefab.includes("_HIDE_")) {
-          if (!this.settings.harvestingLivingHide[`e${enchant}`][h.tier - 1]) {
-            iG = false;
-          }
-        } else if (h.prefab.includes("_WOOD_")) {
-          if (!this.settings.harvestingLivingWood[`e${enchant}`][h.tier - 1]) {
-            iG = false;
-          }
-        } else if (h.prefab.includes("_ORE_")) {
-          if (!this.settings.harvestingLivingOre[`e${enchant}`][h.tier - 1]) {
-            iG = false;
-          }
-        } else if (h.prefab.includes("_ROCK_")) {
-          if (!this.settings.harvestingLivingRock[`e${enchant}`][h.tier - 1]) {
-            iG = false;
-          }
-        }
-
-        if (!iG) {
-          this.harvestablesNotGood.push(h);
-          return;
-        }//Check if enemy is regular Enemy
       }
     }
-    this.mobsList.push(h);
-  }
 
-  assignNameBasedOnPrefab(mobPrefab) {
-    let mobName = '';
-    if (mobPrefab.includes('_HIDE_')) {
-      mobName = 'hide';
-    } else if (mobPrefab.includes('_WOOD_')) {
-      mobName = 'Logs';
-    } else if (mobPrefab.includes('_ORE_')) {
-      mobName = 'ore';
-    } else if (mobPrefab.includes('_FIBER_')) {
-      mobName = 'fiber';
-    }else if (mobPrefab.includes('_ROCK_')) {
-      mobName = 'rock';
-    }else {
-      mobName = 'unknown'; // Optional: handle cases where the prefab doesn't match any criteria
-    }
-    return mobName;
-  }
-
-  assignTypeBasedOnPrefab(mobPrefab) {
-    let mobType = '';
-    if (mobPrefab.includes('_HIDE_')) {
-      mobType = 'LivingSkinnable';
-    } else if (mobPrefab.includes('_WOOD_') || mobPrefab.includes('_ORE_') || mobPrefab.includes('_FIBER_') || mobPrefab.includes('_ROCK_')) {
-      mobType = 'LivingHarvestable';
-    } else {
-      mobType = 'Unknown'; // Optional: handle cases where the prefab doesn't match any criteria
-    }
-    return mobType;
+    return false;
   }
 
   removeMob(id) {
-    const pSize = this.mobsList.length;
-
-    this.mobsList = this.mobsList.filter((x) => x.id !== id);
-
-    if (this.mobsList.length < pSize) return;
-
-    this.harvestablesNotGood = this.harvestablesNotGood.filter(
-      (x) => x.id !== id
-    );
+    const initialSize = this.mobsList.length;
+    this.mobsList = this.mobsList.filter((mob) => mob.id !== id);
+    if (this.mobsList.length < initialSize) return;
+    this.harvestablesNotGood = this.harvestablesNotGood.filter((mob) => mob.id !== id);
   }
 
   updateMobPosition(id, posX, posY) {
-    var enemy = this.mobsList.find((enemy) => enemy.id === id);
-
-    if (enemy) {
-      enemy.posX = posX;
-      enemy.posY = posY;
-      return;
+    const mob = this.mobsList.find((mob) => mob.id === id);
+    if (mob) {
+      mob.posX = posX;
+      mob.posY = posY;
     }
   }
 
   updateEnchantEvent(parameters) {
-    const mobId = parameters[0];
-    const enchantmentLevel = parameters[1];
+    const [mobId, enchantmentLevel] = parameters;
+    let mob = this.mobsList.find((mob) => mob.id == mobId) || this.harvestablesNotGood.find((mob) => mob.id == mobId);
 
-    var enemy = this.mobsList.find((mob) => mob.id == mobId);
+    if (mob) {
+      mob.enchantmentLevel = enchantmentLevel;
 
-    if (enemy) {
-      enemy.enchantmentLevel = enchantmentLevel;
-      return;
-    }
-
-    enemy = this.harvestablesNotGood.find((mob) => mob.id == mobId);
-
-    if (!enemy) return;
-
-    enemy.enchantmentLevel = enchantmentLevel;
-
-    let hasToSwapFromList = false;
-
-    if (enemy.type == "LivingSkinnable") {
-      if (
-        !this.settings.harvestingLivingHide[`e${enemy.enchantmentLevel}`][
-          enemy.tier - 1
-        ]
-      )
-        return;
-
-      hasToSwapFromList = true;
-    } else if (enemy.type == "LivingHarvestable") {
-      switch (enemy.name) {
-        case "fiber":
-          if (
-            !this.settings.harvestingLivingFiber[`e${enemy.enchantmentLevel}`][
-              enemy.tier - 1
-            ]
-          )
-            return;
-
-          hasToSwapFromList = true;
-          break;
-
-        case "hide":
-          if (
-            !this.settings.harvestingLivingHide[`e${enemy.enchantmentLevel}`][
-              enemy.tier - 1
-            ]
-          )
-            return;
-
-          hasToSwapFromList = true;
-          break;
-
-        case "Logs":
-          if (
-            !this.settings.harvestingLivingWood[`e${enemy.enchantmentLevel}`][
-              enemy.tier - 1
-            ]
-          )
-            return;
-
-          hasToSwapFromList = true;
-          break;
-
-        case "ore":
-          if (
-            !this.settings.harvestingLivingOre[`e${enemy.enchantmentLevel}`][
-              enemy.tier - 1
-            ]
-          )
-            return;
-
-          hasToSwapFromList = true;
-          break;
-
-        case "rock":
-          if (
-            !this.settings.harvestingLivingRock[`e${enemy.enchantmentLevel}`][
-              enemy.tier - 1
-            ]
-          )
-            return;
-
-          hasToSwapFromList = true;
-          break;
-
-        default:
-          break;
+      if (this.shouldMoveToMobsList(mob)) {
+        this.mobsList.push(mob);
+        this.harvestablesNotGood = this.harvestablesNotGood.filter((item) => item.id !== mob.id);
       }
     }
-
-    if (!hasToSwapFromList) return;
-
-    this.mobsList.push(enemy);
-    this.harvestablesNotGood = this.harvestablesNotGood.filter(
-      (x) => x.id !== enemy.id
-    );
   }
 
+  shouldMoveToMobsList(mob) {
+    const enchantKey = `e${mob.enchantmentLevel}`;
+    if (mob.type === "LivingSkinnable") {
+      return this.settings.harvestingLivingHide[enchantKey][mob.tier - 1];
+    }
 
-  AddMist(id, posX, posY, name, enchant) {
-    if (this.mistList.some((mist) => mist.id === id)) return;
+    const harvestableTypes = {
+      fiber: this.settings.harvestingLivingFiber,
+      hide: this.settings.harvestingLivingHide,
+      Logs: this.settings.harvestingLivingWood,
+      ore: this.settings.harvestingLivingOre,
+      rock: this.settings.harvestingLivingRock,
+    };
 
-    const d = new Mist(id, posX, posY, name, enchant);
+    return harvestableTypes[mob.name] && harvestableTypes[mob.name][enchantKey][mob.tier - 1];
+  }
 
-    this.mistList.push(d);
+  addMist(id, posX, posY, name, enchant) {
+    if (!this.mistList.some((mist) => mist.id === id)) {
+      this.mistList.push(new Mist(id, posX, posY, name, enchant));
+    }
   }
 
   removeMist(id) {
@@ -349,19 +209,17 @@ export class MobsHandler {
   }
 
   updateMistPosition(id, posX, posY) {
-    var mist = this.mistList.find((mist) => mist.id === id);
-
-    if (!mist) return;
-
-    mist.posX = posX;
-    mist.posY = posY;
+    const mist = this.mistList.find((mist) => mist.id === id);
+    if (mist) {
+      mist.posX = posX;
+      mist.posY = posY;
+    }
   }
 
   updateMistEnchantmentLevel(id, enchantmentLevel) {
-    var mist = this.mistList.find((mist) => mist.id === id);
-
-    if (!mist) return;
-
-    mist.enchant = enchantmentLevel;
+    const mist = this.mistList.find((mist) => mist.id === id);
+    if (mist) {
+      mist.enchant = enchantmentLevel;
+    }
   }
 }

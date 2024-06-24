@@ -75,7 +75,7 @@ let lpY = 0.0;
 const drawingUtils = new DrawingUtils();
 drawingUtils.initCanvas(canvas, context);
 drawingUtils.initGridCanvas(canvasGrid, contextGrid);
-drawingUtils.InitOurPlayerCanvas(canvasOurPlayer, contextOurPlayer);
+drawingUtils.initOurPlayerCanvas(canvasOurPlayer, contextOurPlayer);
 
 function breakSpell(Parameters) {
   const playerId = Parameters[0];
@@ -128,9 +128,9 @@ function onEvent(Parameters) {
       playersHandler.removePlayer(id);
       mobsHandler.removeMist(id);
       mobsHandler.removeMob(id);
-      dungeonsHandler.RemoveDungeon(id);
+      dungeonsHandler.removeDungeon(id);
       chestsHandler.removeChest(id);
-      fishingHandler.RemoveFish(id);
+      fishingHandler.removeFish(id);
       trackFootprintsHandler.removeFootprint(id);
       break;
 
@@ -158,7 +158,7 @@ function onEvent(Parameters) {
       break;
 
     case EventCodes.HarvestableChangeState:
-      harvestablesHandler.HarvestUpdateEvent(Parameters);
+      harvestablesHandler.harvestUpdateEvent(Parameters);
       break;
 
     case EventCodes.HarvestFinished:
@@ -170,7 +170,7 @@ function onEvent(Parameters) {
       break;
 
     case EventCodes.RegenerationHealthChanged:
-      playersHandler.UpdatePlayerHealth(Parameters);
+      playersHandler.updatePlayerHealth(Parameters);
       break;
 
     case EventCodes.CharacterEquipmentChanged:
@@ -179,7 +179,7 @@ function onEvent(Parameters) {
       break;
 
     case EventCodes.NewMob:
-      mobsHandler.NewMobEvent(Parameters);
+      mobsHandler.newMobEvent(Parameters);
       break;
 
     case EventCodes.Mounted:
@@ -208,12 +208,12 @@ function onEvent(Parameters) {
 
     // TODO
     case EventCodes.NewFishingZoneObject:
-      fishingHandler.NewFishEvent(Parameters);
+      fishingHandler.newFishEvent(Parameters);
       break;
 
     // TODO
     case EventCodes.FishingFinished:
-      fishingHandler.FishingEnd(Parameters);
+      fishingHandler.fishingEnd(Parameters);
       break;
 
     default:

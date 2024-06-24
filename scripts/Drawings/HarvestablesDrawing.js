@@ -4,89 +4,61 @@ export class HarvestablesDrawing extends DrawingUtils {
   }
 
   interpolate(harvestables, lpX, lpY, t) {
-    for (const harvestableOne of harvestables) {
-      const hX = -1 * harvestableOne.posX + lpX;
-      const hY = harvestableOne.posY - lpY;
+    for (const harvestable of harvestables) {
+      const hX = -1 * harvestable.posX + lpX;
+      const hY = harvestable.posY - lpY;
 
-      if (harvestableOne.hY == 0 && harvestableOne.hX == 0) {
-        harvestableOne.hX = hX;
-        harvestableOne.hY = hY;
+      if (harvestable.hX === 0 && harvestable.hY === 0) {
+        harvestable.hX = hX;
+        harvestable.hY = hY;
       }
 
-      harvestableOne.hX = this.lerp(harvestableOne.hX, hX, t);
-      harvestableOne.hY = this.lerp(harvestableOne.hY, hY, t);
+      harvestable.hX = this.lerp(harvestable.hX, hX, t);
+      harvestable.hY = this.lerp(harvestable.hY, hY, t);
     }
   }
 
   invalidate(ctx, harvestables) {
-    for (const harvestableOne of harvestables) {
-      if (harvestableOne.size <= 0) continue;
+    const typeMapping = {
+      fiber: [11, 14, 38, 42],
+      logs: [0, 5, 28, 32],
+      rock: [6, 10, 33, 37],
+      hide: [15, 22, 43, 47],
+      ore: [23, 27, 48, 52],
+    };
 
-      // OLD, to keep if I do an advance settings menu
-      // This will be the beginner friendly
-
-      /*if (!this.settings.harvestingTiers[harvestableOne.tier - 1]) {
-                continue;
-            }
-
-            if (!this.settings.harvestingEnchants[harvestableOne.charges]) {
-                continue;
-            }*/
-
-      const type = harvestableOne.type;
-
-      let draw = undefined;
-
-     if ((type >= 11 && type <= 14) || (type >= 38 && type <= 42)) {
-      draw = "fiber_" + harvestableOne.tier + "_" + harvestableOne.charges;
-      } else     if ((type >= 0 && type <= 5) || (type >= 28 && type <= 32)) {
-        draw = "Logs_" + harvestableOne.tier + "_" + harvestableOne.charges;
-      } else if ((type >= 6 && type <= 10) || (type >= 33 && type <= 37)) {
-        draw = "rock_" + harvestableOne.tier + "_" + harvestableOne.charges;
-      } else if ((type >= 15 && type <= 22) || (type >= 43 && type <= 47)) {
-        draw = "hide_" + harvestableOne.tier + "_" + harvestableOne.charges;
-      } else if ((type >= 23 && type <= 27) || (type >= 48 && type <= 52)) {
-        draw = "ore_" + harvestableOne.tier + "_" + harvestableOne.charges;
+    const getTypeKey = (type) => {
+      for (const [key, range] of Object.entries(typeMapping)) {
+        if (
+          (type >= range[0] && type <= range[1]) ||
+          (type >= range[2] && type <= range[3])
+        ) {
+          return key;
+        }
       }
+      return undefined;
+    };
 
-      if (draw === undefined) continue;
+    for (const harvestable of harvestables) {
+      if (harvestable.size <= 0) continue;
 
-      /*if (this.settings.harvestingFiber && (type >= 11 && type <= 14)) {
+      const typeKey = getTypeKey(harvestable.type);
+      if (!typeKey) continue;
 
-                draw = "fiber_" + harvestableOne.tier + "_" + harvestableOne.charges;
-            }
-            else if (this.settings.harvestingWood && (type >= 0 && type <= 5)) {
+      const draw =
+        `${typeKey}_${harvestable.tier}_${harvestable.charges}`;
 
-                draw = "Logs_" + harvestableOne.tier + "_" + harvestableOne.charges;
-            }
+      const point = this.transformPoint(harvestable.hX, harvestable.hY);
 
-            else if (this.settings.harvestingRock && (type >= 6 && type <= 10)) {
-
-                draw = "rock_" + harvestableOne.tier + "_" + harvestableOne.charges;
-            }
-            
-            else if (this.settings.harvestingHide && (type >= 15 && type <= 22))
-            {
-
-                draw = "hide_" + harvestableOne.tier + "_" + harvestableOne.charges;
-            }
-            else if (this.settings.harvestingOre && (type >= 23 && type <= 27)){
-
-                draw = "ore_" + harvestableOne.tier + "_" + harvestableOne.charges;
-            }*/
-
-      const point = this.transformPoint(harvestableOne.hX, harvestableOne.hY);
-
-      // TODO
-      // Change Resources to Animals/LHarvestables (living harvestables)
       this.DrawCustomImage(ctx, point.x, point.y, draw, "Resources", 50);
 
-      if (this.settings.livingResourcesID)
-        this.drawText(point.x, point.y + 20, type.toString(), ctx);
+      if (this.settings.livingResourcesID) {
+        this.drawText(point.x, point.y + 20, harvestable.type.toString(), ctx);
+      }
 
-      // TODO
-      if (this.settings.resourceSize)
-        this.drawText(point.x, point.y - 20, harvestableOne.size, ctx);
+      if (this.settings.resourceSize) {
+        this.drawText(point.x, point.y - 20, harvestable.size.toString(), ctx);
+      }
     }
   }
 }
