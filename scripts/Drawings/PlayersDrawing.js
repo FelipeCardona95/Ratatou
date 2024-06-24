@@ -122,9 +122,10 @@ export class PlayersDrawing extends DrawingUtils {
         );
       }
 
-      posY += 45;
+
 
       if (spells != null) {
+        
         for (const key in spells) {
           if (spells.hasOwnProperty(key)) {
             spellsListString += spells[key] + " ";
@@ -132,6 +133,7 @@ export class PlayersDrawing extends DrawingUtils {
         }
         posY += 5;
         if (this.settings.settingSpells) {
+          posY += 45;
           posX = 25;
           const spellKeys = ["weaponFirst", "weaponSecond", "weaponThird", "helmet", "chest", "boots"];
           for (const key of spellKeys) {
