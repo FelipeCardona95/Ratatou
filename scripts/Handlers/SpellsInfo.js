@@ -25,8 +25,10 @@ export class SpellsInfo {
   logMissingSpell(id) {
     if (!this.spellList[id]) {
       this.missingSpellIds.add(id);
+      if(id != 65665){
       console.log(`Missing spell ID: ${id}`); // Log missing spell IDs to the console
-      this.writeMissingSpellsToLocalStorage(); // Ensure missing spells are written to localStorage
+      this.writeMissingSpellsToLocalStorage();
+    } // Ensure missing spells are written to localStorage
     }
   }
   

@@ -54,6 +54,7 @@ function createDrawingWindow() {
 
     drawingWindow.maximize();
     drawingWindow.setIgnoreMouseEvents(true, { forward: true });
+    //remove this to make interactabkle
 }
 
 ipcMain.on('open-drawing-window', (event, arg) => {
