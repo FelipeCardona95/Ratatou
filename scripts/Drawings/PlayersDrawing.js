@@ -22,21 +22,95 @@ export class PlayersDrawing extends DrawingUtils {
   }
 
   sortPlayersByDistance(players) {
-    // Sort all players by their distance
-    const sortedPlayers = players.slice().sort((a, b) => a.distance - b.distance);
-
-    // Extract the top 3 closest players
-    const top3 = sortedPlayers.slice(0, 3);
-
-    // Maintain the original order among the top 3 closest players
-    const originalTop3 = players.filter(player => top3.includes(player));
-
-    // Get the rest of the players, excluding the original top 3
-    const rest = sortedPlayers.slice(3);
-
-    // Combine the original top 3 with the sorted rest
-    return originalTop3.concat(rest);
+    return players.sort((a, b) => a.distance - b.distance);
   }
+
+  processItems(items) {
+    const relevantPositions = [0, 1, 2, 3, 4, 6];
+    return relevantPositions.map(i => items[i] === 0 ? "0" : this.itemsInfo[items[i]]);
+}
+
+calculateItemPower(itemNames, maxSpecQuality) {
+    let itemPower = 0;
+
+    for (const itemName of itemNames) {
+        const tierMatch = itemName.match(/T(\d)_/);
+        const levelMatch = itemName.match(/@(\d)/);
+
+        if (tierMatch) {
+            const tier = parseInt(tierMatch[1]);
+            itemPower += this.getTierPower(tier);
+        }
+
+        if (levelMatch) {
+            const level = parseInt(levelMatch[1]);
+            itemPower += this.getLevelPower(level);
+        }
+        
+    }
+
+    if (maxSpecQuality) {
+      // Adding the +20 for basic tree level 100
+      itemPower += 20;
+      // Adding the +20 (or +10 depending on weapon) and +200 for specialized tree
+      itemPower += 20 + 200;
+      //Adding max quality
+      itemPower += 100;
+      //Artifact Type
+      itemPower += 100;
+  }
+
+    return itemPower;
+}
+
+getTierPower(tier) {
+    const tierPowers = {
+        1: 100,
+        2: 300,
+        3: 500,
+        4: 700,
+        5: 800,
+        6: 900,
+        7: 1000,
+        8: 1100
+    };
+    return tierPowers[tier] || 0;
+}
+
+getLevelPower(level) {
+    const levelPowers = {
+        1: 100,
+        2: 200,
+        3: 300,
+        4: 400
+    };
+    return levelPowers[level] || 0;
+}
+
+getAverageItemPower(itemNames, maxSpecQuality) {
+    if (itemNames.length === 0) return 0;
+
+    let totalValue = 0;
+    let itemCount = itemNames.length;
+    let twoHandedWeaponPower = 0;
+    let hasTwoHandedWeapon = false;
+
+    for (const itemName of itemNames) {
+        totalValue += this.calculateItemPower([itemName], maxSpecQuality);
+
+        if (itemName.includes("2H_")) {
+            twoHandedWeaponPower = this.calculateItemPower([itemName], maxSpecQuality);
+            hasTwoHandedWeapon = true;
+        }
+    }
+
+    if (hasTwoHandedWeapon) {
+        totalValue += twoHandedWeaponPower;
+        itemCount++;
+    }
+
+    return Math.round(totalValue / itemCount);
+}
 
   drawItems(context, canvas, players, devMode, castedSpells, spellsDev, alreadyFilteredPlayers, filteredGuilds, filteredAlliances) {
     let posY = 15;
@@ -110,7 +184,17 @@ export class PlayersDrawing extends DrawingUtils {
         posX += 10 + 40;
         itemsListString += item.toString() + " ";
       }
+      if(items.length >= 6){
+      let itemIDs = this.processItems(items);
+      const baseAverageItemPower = this.getAverageItemPower(itemIDs, false);
+      let baseAverageItemPowerMaxSpec = this.getAverageItemPower(itemIDs, true);
+      let estimatedActualItemPower = Math.round((baseAverageItemPower + baseAverageItemPowerMaxSpec) /2);
+      if (baseAverageItemPower == 0) {
+        baseAverageItemPowerMaxSpec = 0;
+        estimatedActualItemPower = 0;
+      }
 
+      this.drawTextItems(posTemp, posY -27, `AIP: ${estimatedActualItemPower} - ${baseAverageItemPowerMaxSpec}`, context, "14px", "yellow");}
       if (devMode) {
         this.drawTextItems(
           posTemp,
