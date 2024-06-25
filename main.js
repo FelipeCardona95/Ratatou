@@ -28,6 +28,7 @@ function createWindow() {
     mainWindow.on('closed', function () {
         mainWindow = null;
     });
+    mainWindow.webContents.session.clearCache();
 }
 
 function createDrawingWindow() {
