@@ -177,30 +177,27 @@ class HarvestablesHandler {
 
   // Normally work with everything
   // Good
-  newSimpleHarvestableObject(Parameters) {
-    // Validate Parameters
-    const a0 = Parameters[0]?.data ?? [];
-    const a1 = Parameters[1]?.data ?? [];
-    const a2 = Parameters[2]?.data ?? [];
-    const a3 = Parameters[3] ?? [];
-    const a4 = Parameters[4]?.data ?? [];
-  
+  newSimpleHarvestableObject(
+    Parameters, // New
+  ) {
+    const a0 = Parameters[0];
+
     if (a0.length === 0) return;
-  
-    // Ensure all arrays have the same length
-    const length = a0.length;
-    if (a1.length !== length || a2.length !== length || a3.length !== length * 2 || a4.length !== length) {
-      throw new Error("Parameter arrays have inconsistent lengths");
-    }
-  
-    for (let i = 0; i < length; i++) {
+
+    const a1 = Parameters[1]["data"];
+    const a2 = Parameters[2]["data"];
+
+    const a3 = Parameters[3];
+    const a4 = Parameters[4]["data"];
+
+    for (let i = 0; i < a0.length; i++) {
       const id = a0[i];
       const type = a1[i];
       const tier = a2[i];
       const posX = a3[i * 2];
       const posY = a3[i * 2 + 1];
       const count = a4[i];
-  
+
       this.addHarvestable(id, type, tier, posX, posY, 0, count);
     }
   }
