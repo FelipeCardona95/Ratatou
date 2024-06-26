@@ -23,18 +23,6 @@ function createWindow() {
     },
   });
 
-  // Disable Autofill feature
-  session.defaultSession.webRequest.onBeforeRequest(
-    { urls: ["*://*/*"] },
-    (details, callback) => {
-      if (details.url.startsWith("devtools://")) {
-        callback({ cancel: true });
-      } else {
-        callback({});
-      }
-    }
-  );
-
   mainWindow.loadURL("http://localhost:5001/");
 
   mainWindow.on("closed", function () {
