@@ -125,6 +125,8 @@ getAverageItemPower(itemNames, maxSpecQuality) {
     for (const playerOne of sortedPlayers) {
       const items = playerOne.items;
       const spells = playerOne.spells;
+      if(playerOne.distance > 80)
+        continue;
       if (filteredGuilds.find((name) => name === playerOne.guildName.toUpperCase()) || filteredAlliances.find((name) => name === playerOne.alliance.toUpperCase()) || alreadyFilteredPlayers.find((name) => name === playerOne.nickname.toUpperCase()))
         continue;
       if (items == null) continue;
