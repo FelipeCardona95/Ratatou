@@ -199,18 +199,6 @@
                     $('#toggleGridButton').text('Enable Grid');
                 }
             });
-
-            // Switch position button click handler
-            $('#switchPositionButton').click(function () {
-                controlsAtBottom = !controlsAtBottom;
-                if (controlsAtBottom) {
-                    $('#controlsContainer').css({ 'top': '520px', 'left': '0' });
-                    $('#rightCanvas').css({ 'top': '0', 'left': '520px' });
-                } else {
-                    $('#controlsContainer').css({ 'top': '0', 'left': '520px' });
-                    $('#rightCanvas').css({ 'top': '520px', 'left': '0' });
-                }
-            });
         });
     </script>
 </body>
