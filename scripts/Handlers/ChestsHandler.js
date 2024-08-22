@@ -30,7 +30,7 @@ class ChestsHandler {
     const chestsPosition = Parameters[1];
     let chestName = Parameters[3];
 
-    if (chestName.toLowerCase().includes("mist")) {
+    if (chestName.toLowerCase().includes("mist") || chestName.toLowerCase().includes("avalon")) {
       chestName = Parameters[4];
     }
 

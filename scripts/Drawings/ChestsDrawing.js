@@ -24,13 +24,15 @@
       if (
         this.settings.chestGreen &&
         (chestOne.chestName.toLowerCase().includes("standard") ||
-          chestOne.chestName.toLowerCase().includes("green"))
+          chestOne.chestName.toLowerCase().includes("green")||
+          chestOne.chestName.toLowerCase().includes("regular_01"))
       ) {
         this.DrawCustomImage(ctx, point.x, point.y, "green", "Resources", 50);
       } else if (
         this.settings.chestGreen &&
         (chestOne.chestName.toLowerCase().includes("uncommon") ||
-          chestOne.chestName.toLowerCase().includes("blue"))
+          chestOne.chestName.toLowerCase().includes("blue")||
+          chestOne.chestName.toLowerCase().includes("regular_03"))
       ) {
         this.DrawCustomImage(ctx, point.x, point.y, "blue", "Resources", 50);
       } else if (
@@ -42,7 +44,8 @@
       } else if (
         this.settings.chestGreen &&
         (chestOne.chestName.toLowerCase().includes("legendary") ||
-          chestOne.chestName.toLowerCase().includes("yellow"))
+          chestOne.chestName.toLowerCase().includes("yellow")||
+          chestOne.chestName.toLowerCase().includes("regular_04"))
       ) {
         this.DrawCustomImage(
           ctx,
