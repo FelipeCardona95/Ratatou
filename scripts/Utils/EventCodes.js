@@ -593,3 +593,7 @@ export const EventCodes = {
     JournalAchievementProgressUpdate :eventCode++,
     JournalClaimableRewardUpdate :eventCode++,
 };
+export const EventCodeNames = {};
+for (let key in EventCodes) {
+    EventCodeNames[EventCodes[key]] = key;
+}

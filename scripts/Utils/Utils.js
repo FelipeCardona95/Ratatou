@@ -8,7 +8,7 @@ import { WispCageDrawing } from "../Drawings/WispCageDrawing.js";
 import { FishingDrawing } from "../Drawings/FishingDrawing.js";
 
 import { TrackFootprintsDrawing } from "../Drawings/TrackFootprintsDrawing.js";
-import { EventCodes } from "./EventCodes.js";
+import { EventCodes, EventCodeNames } from "./EventCodes.js";
 
 import { PlayersHandler } from "../Handlers/PlayersHandler.js";
 import { MobsHandler } from "../Handlers/MobsHandler.js";
